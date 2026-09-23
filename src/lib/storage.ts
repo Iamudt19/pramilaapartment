@@ -20,22 +20,7 @@ export const STORAGE_BUCKETS = {
 } as const;
 
 /**
- * Save file locally to public/uploads directory
- */
-async function saveToLocalDisk(filename: string, fileBuffer: Buffer | Uint8Array): Promise<string> {
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-  }
-  const cleanFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const uniqueName = `${Date.now()}-${cleanFilename}`;
-  const filePath = path.join(uploadsDir, uniqueName);
-  await fs.promises.writeFile(filePath, Buffer.from(fileBuffer));
-  return `/uploads/${uniqueName}`;
-}
-
-/**
- * Upload a file to Supabase Storage with local filesystem fallback
+ * Upload a file to Supabase Storage with in-memory Base64 / local disk fallback
  */
 export async function uploadToStorage({
   bucket,
@@ -50,42 +35,64 @@ export async function uploadToStorage({
   contentType: string;
   isPublic?: boolean;
 }): Promise<{ url: string; path: string }> {
+  const buf = Buffer.from(fileBuffer);
   const fileName = storagePath.split('/').pop() || `file-${Date.now()}`;
 
-  // Try Supabase Storage if configured
+  // 1. Try Supabase Storage if configured
   if (supabaseUrl && supabaseServiceKey) {
     try {
+      // Ensure bucket exists or create it
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some((b) => b.name === bucket);
+      if (!bucketExists) {
+        await supabase.storage.createBucket(bucket, { public: true }).catch(() => {});
+      }
+
       const { data, error } = await supabase.storage
         .from(bucket)
-        .upload(storagePath, fileBuffer, {
-          contentType,
+        .upload(storagePath, buf, {
+          contentType: contentType || 'image/jpeg',
           upsert: true,
         });
 
       if (!error && data) {
-        if (isPublic) {
-          const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+        const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(data.path);
+        if (publicData?.publicUrl) {
           return { url: publicData.publicUrl, path: data.path };
-        } else {
-          const { data: signedData, error: signError } = await supabase.storage
-            .from(bucket)
-            .createSignedUrl(data.path, 60 * 60 * 24 * 7); // 7 days
-
-          if (!signError && signedData) {
-            return { url: signedData.signedUrl, path: data.path };
-          }
         }
       }
     } catch (e) {
-      console.warn(`Supabase bucket "${bucket}" upload failed, falling back to local storage:`, e);
+      console.warn(`Supabase bucket "${bucket}" upload failed, falling back to base64/local:`, e);
     }
   }
 
-  // Local filesystem fallback
-  const localUrl = await saveToLocalDisk(fileName, fileBuffer);
+  // 2. Try Local Filesystem (works in local dev environments)
+  try {
+    const isVercel = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NODE_ENV === 'production';
+    if (!isVercel) {
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const cleanFilename = fileName.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const uniqueName = `${Date.now()}-${cleanFilename}`;
+      const filePath = path.join(uploadsDir, uniqueName);
+      await fs.promises.writeFile(filePath, buf);
+      return {
+        url: `/uploads/${uniqueName}`,
+        path: `/uploads/${uniqueName}`,
+      };
+    }
+  } catch (fsErr) {
+    console.warn('Local filesystem write failed (read-only environment), falling back to data URL:', fsErr);
+  }
+
+  // 3. Guaranteed Serverless / Read-Only Fallback (Base64 Data URL)
+  const mime = contentType || 'image/jpeg';
+  const base64String = `data:${mime};base64,${buf.toString('base64')}`;
   return {
-    url: localUrl,
-    path: localUrl,
+    url: base64String,
+    path: storagePath,
   };
 }
 
@@ -106,7 +113,7 @@ export async function getDocumentSignedUrl(bucket: string, path: string, expires
       .from(bucket)
       .createSignedUrl(path, expiresIn);
 
-    if (!error && data) {
+    if (!error && data?.signedUrl) {
       return data.signedUrl;
     }
   } catch (e) {
@@ -115,4 +122,5 @@ export async function getDocumentSignedUrl(bucket: string, path: string, expires
 
   return path;
 }
+
 
