@@ -1,0 +1,664 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String           @id @default(uuid())
+  email               String           @unique
+  password            String
+  name                String
+  phone               String?
+  role                String           @default("TENANT") // SUPER_ADMIN, PROPERTY_MANAGER, ACCOUNTANT, SECURITY_GUARD, MAINTENANCE_STAFF, TENANT
+  avatarUrl           String?
+  isActive            Boolean          @default(true)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  tenant              Tenant?
+  staff               Staff?
+  auditLogs           AuditLog[]
+  notifications       Notification[]
+  sentEmergencyAlerts EmergencyAlert[]
+}
+
+model Property {
+  id               String           @id @default(uuid())
+  name             String           @default("Pramila Apartments")
+  code             String           @default("PA-01")
+  address          String           @default("42, Temple Road, Near High Court, Prayagraj, UP - 211001")
+  contactNumber    String           @default("+91 98765 43210")
+  managementEmail  String           @default("office.pramilaapartment@gmail.com")
+  timezone         String           @default("Asia/Kolkata")
+  currency         String           @default("INR")
+  logoUrl          String?
+  emergencyContact String           @default("112 / +91 98765 00112")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  buildings        Building[]
+  notices          Notice[]
+  emergencyAlerts  EmergencyAlert[]
+  systemSettings   SystemSetting[]
+}
+
+model Building {
+  id           String        @id @default(uuid())
+  propertyId   String
+  name         String
+  code         String
+  address      String?
+  totalFloors  Int           @default(4)
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  property     Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  floors       Floor[]
+  flats        Flat[]
+  parkingSlots ParkingSlot[]
+}
+
+model Floor {
+  id          String   @id @default(uuid())
+  buildingId  String
+  floorNumber Int
+  name        String // "Ground Floor", "1st Floor", etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  building    Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  flats       Flat[]
+}
+
+model Owner {
+  id            String   @id @default(uuid())
+  name          String
+  phone         String
+  email         String
+  address       String?
+  idProofType   String?
+  idProofNumber String?
+  bankName      String?
+  bankAccount   String?
+  ifscCode      String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  flats         Flat[]
+}
+
+model Flat {
+  id                  String               @id @default(uuid())
+  buildingId          String
+  floorId             String
+  flatNumber          String
+  flatType            String               @default("2BHK") // 1BHK, 2BHK, 3BHK, Studio, Penthouse
+  areaSqFt            Float                @default(1150)
+  bedrooms            Int                  @default(2)
+  bathrooms           Int                  @default(2)
+  status              String               @default("VACANT") // VACANT, OCCUPIED, RESERVED, MAINTENANCE
+  monthlyRent         Float                @default(22000)
+  maintenance         Float                @default(2500)
+  deposit             Float                @default(44000)
+  ownerId             String?
+  notes               String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  building            Building             @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  floor               Floor                @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  owner               Owner?               @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  tenancies           Tenancy[]
+  meters              Meter[]
+  invoices            Invoice[]
+  visitorRequests     VisitorRequest[]
+  maintenanceRequests MaintenanceRequest[]
+  vehicles            Vehicle[]
+  parkingSlots        ParkingSlot[]
+  securityIncidents   SecurityIncident[]
+  penalties           Penalty[]
+
+  @@unique([buildingId, flatNumber])
+}
+
+model Tenant {
+  id                    String               @id @default(uuid())
+  userId                String               @unique
+  fullName              String
+  phone                 String
+  email                 String
+  permanentAddress      String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  occupation            String?
+  companyName           String?
+  governmentIdType      String? // Aadhaar, Passport, PAN, Driving License
+  governmentIdNumber    String?
+  status                String               @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED, REJECTED, ACTIVE, INACTIVE
+  rejectionReason       String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  user                  User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenancies             Tenancy[]
+  familyMembers         TenantFamilyMember[]
+  documents             TenantDocument[]
+  visitorRequests       VisitorRequest[]
+  invoices              Invoice[]
+  payments              Payment[]
+  maintenanceRequests   MaintenanceRequest[]
+  vehicles              Vehicle[]
+  penalties             Penalty[]
+  securityIncidents     SecurityIncident[]
+}
+
+model TenantFamilyMember {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  relationship String // Spouse, Child, Parent, Sibling, Other
+  age          Int?
+  phone        String?
+  idProofUrl   String?
+  photoUrl     String?
+  isApproved   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model Tenancy {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  flatId               String
+  startDate            DateTime
+  endDate              DateTime?
+  monthlyRent          Float
+  depositAmount        Float
+  maintenanceAmount    Float     @default(2500)
+  rentDueDay           Int       @default(5)
+  annualIncreasePct    Float     @default(8.0)
+  agreementUrl         String?
+  status               String    @default("ACTIVE") // ACTIVE, UPCOMING, EXPIRED, NOTICE_PERIOD, TERMINATED, COMPLETED
+  noticeSubmittedDate  DateTime?
+  expectedVacatingDate DateTime?
+  moveOutNotes         String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  tenant               Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  flat                 Flat      @relation(fields: [flatId], references: [id], onDelete: Cascade)
+}
+
+model TenantDocument {
+  id              String    @id @default(uuid())
+  tenantId        String
+  documentType    String // AADHAAR, PAN, RENTAL_AGREEMENT, POLICE_VERIFICATION, VEHICLE_RC
+  title           String
+  fileUrl         String
+  fileSize        Int?
+  mimeType        String?
+  expiryDate      DateTime?
+  status          String    @default("PENDING") // PENDING, VERIFIED, REJECTED, EXPIRED
+  verifiedAt      DateTime?
+  verifiedBy      String?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model Visitor {
+  id            String   @id @default(uuid())
+  name          String
+  phone         String
+  photoUrl      String?
+  idProofType   String?
+  idProofNumber String?
+  notes         String?
+  isBlacklisted Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  visitorRequests VisitorRequest[]
+}
+
+model VisitorRequest {
+  id                         String            @id @default(uuid())
+  visitorId                  String?
+  tenantId                   String
+  flatId                     String
+  visitorName                String
+  visitorPhone               String
+  relationship               String // Family, Friend, Delivery, Service, Official, Other
+  purpose                    String
+  vehicleNumber              String?
+  expectedArrival            DateTime
+  expectedDeparture          DateTime
+  durationHours              Int               @default(4)
+  status                     String            @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED, EXPIRED, CHECKED_IN, CHECKED_OUT, UNAUTHORIZED
+  rejectionReason            String?
+  isOvernight                Boolean           @default(false)
+  requiresManagementApproval Boolean           @default(true)
+  reviewedBy                 String?
+  reviewedAt                 DateTime?
+  createdAt                  DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+
+  visitor                    Visitor?          @relation(fields: [visitorId], references: [id], onDelete: SetNull)
+  tenant                     Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  flat                       Flat              @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  documents                  VisitorDocument[]
+  pass                       VisitorPass?
+  entries                    VisitorEntry[]
+  exits                      VisitorExit[]
+}
+
+model VisitorDocument {
+  id               String         @id @default(uuid())
+  visitorRequestId String
+  documentType     String // AADHAAR, DRIVING_LICENSE, PASSPORT, PHOTO
+  fileUrl          String
+  createdAt        DateTime       @default(now())
+
+  visitorRequest   VisitorRequest @relation(fields: [visitorRequestId], references: [id], onDelete: Cascade)
+}
+
+model VisitorPass {
+  id               String         @id @default(uuid())
+  visitorRequestId String         @unique
+  passCode         String         @unique // Secure random token
+  qrCodeUrl        String?
+  validFrom        DateTime
+  validUntil       DateTime
+  isActive         Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  visitorRequest   VisitorRequest @relation(fields: [visitorRequestId], references: [id], onDelete: Cascade)
+}
+
+model VisitorEntry {
+  id                String         @id @default(uuid())
+  visitorRequestId  String
+  securityGuardId   String
+  securityGuardName String
+  entryTime         DateTime       @default(now())
+  vehicleNumber     String?
+  photoUrl          String?
+  gateNumber        String         @default("Main Gate 1")
+  notes             String?
+
+  visitorRequest    VisitorRequest @relation(fields: [visitorRequestId], references: [id], onDelete: Cascade)
+}
+
+model VisitorExit {
+  id                String         @id @default(uuid())
+  visitorRequestId  String
+  securityGuardId   String
+  securityGuardName String
+  exitTime          DateTime       @default(now())
+  durationMinutes   Int?
+  notes             String?
+
+  visitorRequest    VisitorRequest @relation(fields: [visitorRequestId], references: [id], onDelete: Cascade)
+}
+
+model SecurityIncident {
+  id                 String    @id @default(uuid())
+  flatId             String?
+  tenantId           String?
+  reporterGuardId    String
+  reporterName       String
+  incidentType       String // UNAUTHORIZED_ENTRY, NOISE_COMPLAINT, PARKING_VIOLATION, SECURITY_THREAT, PROPERTY_DAMAGE
+  severity           String    @default("MEDIUM") // LOW, MEDIUM, HIGH, CRITICAL
+  description        String
+  visitorName        String?
+  vehicleNumber      String?
+  evidencePhotoUrl   String?
+  isConfirmedByAdmin Boolean   @default(false)
+  confirmedAt        DateTime?
+  actionTaken        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  flat               Flat?     @relation(fields: [flatId], references: [id], onDelete: SetNull)
+  tenant             Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  penalty            Penalty?
+}
+
+model Penalty {
+  id           String            @id @default(uuid())
+  incidentId   String?           @unique
+  tenantId     String
+  flatId       String
+  reason       String // Unauthorized visitor, late party, parking violation
+  amount       Float             @default(2000)
+  status       String            @default("REPORTED") // REPORTED, UNDER_REVIEW, CONFIRMED, APPLIED, PAID, WAIVED, CANCELLED
+  appliedDate  DateTime          @default(now())
+  dueDate      DateTime
+  waiverReason String?
+  waivedBy     String?
+  invoiceId    String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  incident     SecurityIncident? @relation(fields: [incidentId], references: [id], onDelete: SetNull)
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  flat         Flat              @relation(fields: [flatId], references: [id], onDelete: Cascade)
+}
+
+model Meter {
+  id              String         @id @default(uuid())
+  flatId          String
+  meterNumber     String         @unique
+  meterType       String         @default("ELECTRICITY") // ELECTRICITY, WATER, GAS
+  currentStatus   String         @default("ACTIVE")
+  lastReading     Float          @default(0)
+  lastReadingDate DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  flat            Flat           @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  readings        MeterReading[]
+}
+
+model MeterReading {
+  id              String   @id @default(uuid())
+  meterId         String
+  previousReading Float
+  currentReading  Float
+  unitsConsumed   Float
+  ratePerUnit     Float    @default(10.0)
+  totalAmount     Float
+  readingDate     DateTime @default(now())
+  photoUrl        String?
+  recordedBy      String?
+  isBilled        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  meter           Meter    @relation(fields: [meterId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id             String        @id @default(uuid())
+  invoiceNumber  String        @unique // e.g. "INV-202609-0101"
+  tenantId       String
+  flatId         String
+  billingPeriod  String // e.g. "September 2026"
+  issueDate      DateTime      @default(now())
+  dueDate        DateTime
+  subtotal       Float
+  taxAmount      Float         @default(0)
+  lateFee        Float         @default(0)
+  discountAmount Float         @default(0)
+  totalAmount    Float
+  paidAmount     Float         @default(0)
+  balanceAmount  Float
+  status         String        @default("PENDING") // PENDING, PARTIALLY_PAID, PAID, OVERDUE, CANCELLED
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  flat           Flat          @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  items          InvoiceItem[]
+  payments       Payment[]
+}
+
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String
+  itemType    String   @default("RENT") // RENT, MAINTENANCE, ELECTRICITY, WATER, PARKING, PENALTY, REPAIR, OTHER
+  description String
+  quantity    Float    @default(1)
+  unitPrice   Float
+  totalPrice  Float
+  createdAt   DateTime @default(now())
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id             String               @id @default(uuid())
+  receiptNumber  String               @unique // e.g. "REC-2026-0089"
+  invoiceId      String
+  tenantId       String
+  amount         Float
+  paymentMethod  String               @default("ONLINE_GATEWAY") // ONLINE_GATEWAY, UPI, CASH, BANK_TRANSFER, MANUAL_ADJUSTMENT
+  status         String               @default("SUCCESS") // PENDING, PROCESSING, SUCCESS, FAILED, REFUNDED, CANCELLED
+  transactionRef String? // Gateway reference / UPI UTR / Cheque No
+  paymentDate    DateTime             @default(now())
+  notes          String?
+  recordedBy     String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  invoice        Invoice              @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  transactions   PaymentTransaction[]
+}
+
+model PaymentTransaction {
+  id               String   @id @default(uuid())
+  paymentId        String
+  gatewayName      String   @default("RAZORPAY")
+  gatewayOrderId   String?
+  gatewayPaymentId String?
+  gatewaySignature String?
+  amount           Float
+  currency         String   @default("INR")
+  status           String   @default("SUCCESS")
+  rawResponse      String?
+  createdAt        DateTime @default(now())
+
+  payment          Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+}
+
+model MaintenanceRequest {
+  id                 String                  @id @default(uuid())
+  ticketNumber       String                  @unique // e.g. "TKT-2026-0041"
+  flatId             String
+  tenantId           String
+  category           String                  @default("PLUMBING") // PLUMBING, ELECTRICAL, CARPENTRY, CLEANING, APPLIANCE, SECURITY, CIVIL, OTHER
+  title              String
+  description        String
+  priority           String                  @default("MEDIUM") // LOW, MEDIUM, HIGH, EMERGENCY
+  status             String                  @default("NEW") // NEW, ASSIGNED, IN_PROGRESS, WAITING, RESOLVED, CLOSED
+  photosUrl          String?
+  laborCost          Float                   @default(0)
+  materialCost       Float                   @default(0)
+  totalCost          Float                   @default(0)
+  vendorName         String?
+  isTenantChargeable Boolean                 @default(false)
+  resolutionNotes    String?
+  resolvedAt         DateTime?
+  tenantConfirmedAt  DateTime?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  flat               Flat                    @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  tenant             Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  assignments        MaintenanceAssignment[]
+}
+
+model MaintenanceAssignment {
+  id                   String             @id @default(uuid())
+  maintenanceRequestId String
+  staffId              String
+  assignedAt           DateTime           @default(now())
+  status               String             @default("ASSIGNED")
+  notes                String?
+
+  maintenanceRequest   MaintenanceRequest @relation(fields: [maintenanceRequestId], references: [id], onDelete: Cascade)
+  staff                Staff              @relation(fields: [staffId], references: [id], onDelete: Cascade)
+}
+
+model Staff {
+  id               String                  @id @default(uuid())
+  userId           String?                 @unique
+  fullName         String
+  phone            String
+  email            String?
+  role             String                  @default("SECURITY_GUARD") // SECURITY_GUARD, MAINTENANCE_STAFF, ACCOUNTANT, PROPERTY_MANAGER
+  designation      String                  @default("Security Guard")
+  shiftSchedule    String?                 @default("Day Shift (08:00 - 20:00)")
+  joiningDate      DateTime                @default(now())
+  isActive         Boolean                 @default(true)
+  emergencyContact String?
+  idProofUrl       String?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  user             User?                   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignments      MaintenanceAssignment[]
+  attendances      StaffAttendance[]
+}
+
+model StaffAttendance {
+  id        String    @id @default(uuid())
+  staffId   String
+  date      DateTime
+  checkIn   DateTime?
+  checkOut  DateTime?
+  status    String    @default("PRESENT") // PRESENT, ABSENT, LEAVE, HALF_DAY
+  notes     String?
+  createdAt DateTime  @default(now())
+
+  staff     Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+}
+
+model Vehicle {
+  id            String        @id @default(uuid())
+  flatId        String
+  tenantId      String
+  vehicleNumber String        @unique
+  vehicleType   String        @default("CAR") // CAR, BIKE, SCOOTER, OTHER
+  brandModel    String?
+  rfidTagNumber String?
+  status        String        @default("APPROVED") // PENDING, APPROVED, REJECTED
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  flat          Flat          @relation(fields: [flatId], references: [id], onDelete: Cascade)
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parkingSlots  ParkingSlot[]
+}
+
+model ParkingSlot {
+  id           String   @id @default(uuid())
+  buildingId   String
+  slotNumber   String   @unique // e.g. "P-B1-04"
+  areaLocation String   @default("Basement 1")
+  slotType     String   @default("CAR") // CAR, BIKE, EV
+  status       String   @default("AVAILABLE") // AVAILABLE, ASSIGNED, RESERVED, MAINTENANCE
+  flatId       String?
+  vehicleId    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  building     Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  flat         Flat?    @relation(fields: [flatId], references: [id], onDelete: SetNull)
+  vehicle      Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+}
+
+model Notice {
+  id             String    @id @default(uuid())
+  propertyId     String
+  title          String
+  content        String
+  category       String    @default("GENERAL") // GENERAL, SECURITY, MAINTENANCE, RENT, EMERGENCY, INDIVIDUAL
+  attachmentUrl  String?
+  targetAudience String    @default("ALL") // ALL, TENANTS, OWNERS, STAFF
+  isPinned       Boolean   @default(false)
+  publishDate    DateTime  @default(now())
+  expiryDate     DateTime?
+  createdBy      String    @default("Property Management")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  property       Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  eventType String // VISITOR_APPROVED, BILL_DUE, PAYMENT_CONFIRMED, EMERGENCY, etc.
+  link      String?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyAlert {
+  id         String    @id @default(uuid())
+  propertyId String
+  senderId   String
+  senderName String
+  title      String
+  message    String
+  alertType  String // FIRE, SECURITY, MEDICAL, WATER_LEAK, POWER_OUTAGE
+  severity   String    @default("CRITICAL")
+  isActive   Boolean   @default(true)
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  sender     User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  actorName  String
+  action     String // TENANT_APPROVED, RENT_UPDATED, SETTINGS_SAVED, VISITOR_CHECKIN, etc.
+  resource   String // Tenant, Flat, Invoice, Visitor, Setting
+  resourceId String?
+  oldValue   String? // JSON
+  newValue   String? // JSON
+  ipAddress  String?
+  timestamp  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  propertyId  String
+  key         String   @unique // e.g. "billing.electricity.rate"
+  value       String // Serialized value
+  valueType   String   @default("STRING") // STRING, NUMBER, BOOLEAN, JSON
+  category    String   @default("GENERAL") // PROPERTY, BILLING, VISITOR, TENANCY, SECURITY, NOTIFICATION
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+}
+
+model BillingRule {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  ruleType        String   @default("RENT") // RENT, MAINTENANCE, ELECTRICITY, WATER, PARKING, PENALTY, REPAIR, OTHER
+  chargeType      String   @default("FIXED") // FIXED, PER_UNIT, FORMULA, PERCENTAGE
+  baseAmount      Float    @default(0)
+  ratePerUnit     Float    @default(0)
+  dueDayOfMonth   Int      @default(5)
+  gracePeriodDays Int      @default(5)
+  lateFeeFixed    Float    @default(500)
+  lateFeeDaily    Float    @default(50)
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
