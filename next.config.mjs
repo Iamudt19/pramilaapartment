@@ -7,6 +7,15 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  async redirects() {
+    return [
+      {
+        source: '/admin',
+        destination: '/portal/admin',
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
