@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Building2, UserPlus, CheckCircle2, AlertCircle, ArrowRight, Upload, Shield } from 'lucide-react';
+import { Building2, UserPlus, CheckCircle2, AlertCircle, ArrowRight, Upload, Shield, FileText, Camera } from 'lucide-react';
+import { FileUploadZone } from '@/components/shared/FileUploadZone';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export default function RegisterPage() {
     email: '',
     phone: '',
     password: '',
+    avatarUrl: '',
     permanentAddress: '',
     emergencyContactName: '',
     emergencyContactPhone: '',
@@ -20,7 +22,7 @@ export default function RegisterPage() {
     governmentIdType: 'AADHAAR',
     governmentIdNumber: '',
     documentTitle: 'Aadhaar Card Copy',
-    documentUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
+    documentUrl: '',
   });
 
   const [loading, setLoading] = useState(false);
@@ -86,11 +88,25 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Section 1: Personal Info */}
+            {/* Section 1: Personal Info & Person Photo */}
             <div>
               <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3 flex items-center gap-1.5">
                 <Shield className="w-3.5 h-3.5" /> 1. Personal & Contact Information
               </h4>
+
+              {/* Photo of Person */}
+              <div className="mb-4">
+                <FileUploadZone
+                  label="Resident / Person Photo (Selfie)"
+                  category="AVATARS"
+                  mode="avatar"
+                  value={formData.avatarUrl}
+                  helperText="Upload a clear face photo or selfie for resident ID & gate access"
+                  onUploadSuccess={(fileData) => setFormData((prev) => ({ ...prev, avatarUrl: fileData.url }))}
+                  onRemove={() => setFormData((prev) => ({ ...prev, avatarUrl: '' }))}
+                />
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-medium text-slate-300 block mb-1">Full Legal Name *</label>
@@ -139,17 +155,24 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            {/* Section 2: Verification & Occupation */}
+            {/* Section 2: Verification & Doc Pic */}
             <div className="border-t border-slate-800 pt-5">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3">
-                2. Identification & Occupation Details
+              <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-400 mb-3 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5" /> 2. Identification & Document Verification
               </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="text-xs font-medium text-slate-300 block mb-1">Government ID Type *</label>
                   <select
                     value={formData.governmentIdType}
-                    onChange={(e) => setFormData({ ...formData, governmentIdType: e.target.value })}
+                    onChange={(e) => {
+                      const idType = e.target.value;
+                      setFormData({
+                        ...formData,
+                        governmentIdType: idType,
+                        documentTitle: `${idType} Proof Document`,
+                      });
+                    }}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                   >
                     <option value="AADHAAR">Aadhaar Card</option>
@@ -165,7 +188,7 @@ export default function RegisterPage() {
                     value={formData.governmentIdNumber}
                     onChange={(e) => setFormData({ ...formData, governmentIdNumber: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    placeholder="XXXX-XXXX-XXXX"
+                    placeholder="e.g. 5421 9876 1234"
                   />
                 </div>
                 <div>
@@ -175,7 +198,7 @@ export default function RegisterPage() {
                     value={formData.occupation}
                     onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    placeholder="e.g. Senior Consultant"
+                    placeholder="e.g. Software Engineer"
                   />
                 </div>
                 <div>
@@ -185,9 +208,28 @@ export default function RegisterPage() {
                     value={formData.companyName}
                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                     className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
-                    placeholder="e.g. Infosys Ltd"
+                    placeholder="e.g. TechCorp India"
                   />
                 </div>
+              </div>
+
+              {/* Upload Document Pic / ID Proof */}
+              <div className="pt-2">
+                <FileUploadZone
+                  label={`Upload ${formData.governmentIdType} Proof / Document Photo`}
+                  category="DOCUMENTS"
+                  mode="document"
+                  value={formData.documentUrl}
+                  helperText="Upload Aadhaar / PAN / Passport photo or scan (PNG, JPG, PDF)"
+                  onUploadSuccess={(fileData) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      documentUrl: fileData.url,
+                      documentTitle: `${prev.governmentIdType} Proof - ${fileData.fileName}`,
+                    }))
+                  }
+                  onRemove={() => setFormData((prev) => ({ ...prev, documentUrl: '' }))}
+                />
               </div>
             </div>
 
@@ -244,3 +286,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

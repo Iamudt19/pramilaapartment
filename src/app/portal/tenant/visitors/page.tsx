@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { QrCode, Plus, CheckCircle2, AlertCircle, Clock, ShieldCheck, Download, Share2 } from 'lucide-react';
+import { QrCode, Plus, CheckCircle2, AlertCircle, Clock, ShieldCheck, Download, Share2, Camera, FileText } from 'lucide-react';
 import { formatDateTime, formatDate } from '@/lib/utils';
 import { QrPassCard } from '@/components/shared/QrPassCard';
+import { FileUploadZone } from '@/components/shared/FileUploadZone';
 
 export default function TenantVisitorsPage() {
   const [visitors, setVisitors] = useState<any[]>([]);
@@ -20,7 +21,8 @@ export default function TenantVisitorsPage() {
     durationHours: 4,
     expectedArrival: '',
     isOvernight: false,
-    documentUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
+    visitorPhotoUrl: '',
+    documentUrl: '',
     documentType: 'AADHAAR',
   });
 
@@ -58,7 +60,8 @@ export default function TenantVisitorsPage() {
           durationHours: 4,
           expectedArrival: '',
           isOvernight: false,
-          documentUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=600&q=80',
+          visitorPhotoUrl: '',
+          documentUrl: '',
           documentType: 'AADHAAR',
         });
         fetchVisitors();
@@ -112,8 +115,20 @@ export default function TenantVisitorsPage() {
                 )}
               </div>
 
-              <h3 className="font-bold text-white text-base">{v.visitorName}</h3>
-              <p className="text-xs text-slate-400">{v.relationship} • {v.visitorPhone}</p>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0 text-emerald-400">
+                  {v.visitorPhotoUrl ? (
+                    <img src={v.visitorPhotoUrl} alt={v.visitorName} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-sm">{v.visitorName.charAt(0)}</span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-bold text-white text-base">{v.visitorName}</h3>
+                  <p className="text-xs text-slate-400">{v.relationship} • {v.visitorPhone}</p>
+                </div>
+              </div>
+
               <p className="text-xs text-slate-300 mt-2">Purpose: <strong>{v.purpose}</strong></p>
 
               <div className="mt-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800/80 text-xs text-slate-400 space-y-1">
@@ -139,8 +154,8 @@ export default function TenantVisitorsPage() {
 
       {/* Request Visitor Pass Modal */}
       {showRequestModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-150 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8">
             <h3 className="text-lg font-bold text-white mb-1">Request Visitor Gate Pass</h3>
             <p className="text-xs text-slate-400 mb-4">Provide guest details in compliance with society visitor policy.</p>
 
@@ -152,6 +167,17 @@ export default function TenantVisitorsPage() {
             )}
 
             <form onSubmit={handleCreateRequest} className="space-y-4">
+              {/* Visitor Photo */}
+              <FileUploadZone
+                label="Visitor Photo (Optional)"
+                category="VISITORS"
+                mode="avatar"
+                value={formData.visitorPhotoUrl}
+                helperText="Upload guest photo or selfie for swift gate verification"
+                onUploadSuccess={(fileData) => setFormData((prev) => ({ ...prev, visitorPhotoUrl: fileData.url }))}
+                onRemove={() => setFormData((prev) => ({ ...prev, visitorPhotoUrl: '' }))}
+              />
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-slate-300 block mb-1">Visitor Full Name *</label>
@@ -227,6 +253,19 @@ export default function TenantVisitorsPage() {
                   value={formData.vehicleNumber}
                   onChange={(e) => setFormData({ ...formData, vehicleNumber: e.target.value })}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                />
+              </div>
+
+              {/* Visitor ID Document (Optional) */}
+              <div className="pt-1">
+                <FileUploadZone
+                  label="Visitor ID Document Photo (Optional)"
+                  category="VISITORS"
+                  mode="document"
+                  value={formData.documentUrl}
+                  helperText="Upload Aadhaar, Driver License or Company ID (optional)"
+                  onUploadSuccess={(fileData) => setFormData((prev) => ({ ...prev, documentUrl: fileData.url }))}
+                  onRemove={() => setFormData((prev) => ({ ...prev, documentUrl: '' }))}
                 />
               </div>
 

@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
       email,
       phone,
       password,
+      avatarUrl,
       permanentAddress,
       emergencyContactName,
       emergencyContactPhone,
@@ -50,6 +51,7 @@ export async function POST(req: NextRequest) {
         password: hashedPassword,
         name: fullName,
         phone,
+        avatarUrl: avatarUrl || undefined,
         role: 'TENANT',
         tenant: {
           create: {

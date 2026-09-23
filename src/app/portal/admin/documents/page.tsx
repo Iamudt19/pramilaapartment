@@ -3,10 +3,12 @@
 import React, { useEffect, useState } from 'react';
 import { FolderLock, CheckCircle2, XCircle, ShieldCheck, Eye, ExternalLink } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { DocumentViewerModal } from '@/components/shared/DocumentViewerModal';
 
 export default function AdminDocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedDoc, setSelectedDoc] = useState<any | null>(null);
 
   const fetchDocs = async () => {
     try {
@@ -68,9 +70,12 @@ export default function AdminDocumentsPage() {
               documents.map((doc) => (
                 <tr key={doc.id} className="hover:bg-slate-900/40 transition-colors">
                   <td className="py-3 px-4">
-                    <div className="font-bold text-white flex items-center gap-1.5">
-                      <FolderLock className="w-4 h-4 text-emerald-400" /> {doc.title}
-                    </div>
+                    <button
+                      onClick={() => setSelectedDoc(doc)}
+                      className="font-bold text-white hover:text-emerald-400 flex items-center gap-1.5 transition text-left"
+                    >
+                      <FolderLock className="w-4 h-4 text-emerald-400 shrink-0" /> {doc.title}
+                    </button>
                     <span className="text-[10px] text-slate-400 uppercase">{doc.documentType}</span>
                   </td>
                   <td className="py-3 px-4">
@@ -97,24 +102,31 @@ export default function AdminDocumentsPage() {
                     {doc.verifiedBy || 'Pending'}
                   </td>
                   <td className="py-3 px-4 text-right">
-                    {doc.status === 'PENDING' ? (
-                      <div className="flex justify-end gap-1.5">
-                        <button
-                          onClick={() => handleVerify(doc.id, 'VERIFIED')}
-                          className="px-2.5 py-1 bg-emerald-500 text-slate-950 font-bold rounded-lg text-[11px] hover:bg-emerald-400"
-                        >
-                          Verify
-                        </button>
-                        <button
-                          onClick={() => handleVerify(doc.id, 'REJECTED')}
-                          className="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800 rounded-lg text-[11px] hover:bg-rose-900"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-slate-500 text-xs">—</span>
-                    )}
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => setSelectedDoc(doc)}
+                        className="px-2.5 py-1 bg-slate-800 text-slate-200 font-medium rounded-lg text-[11px] hover:bg-slate-700 flex items-center gap-1"
+                        title="View Full Document"
+                      >
+                        <Eye className="w-3 h-3" /> View
+                      </button>
+                      {doc.status === 'PENDING' && (
+                        <>
+                          <button
+                            onClick={() => handleVerify(doc.id, 'VERIFIED')}
+                            className="px-2.5 py-1 bg-emerald-500 text-slate-950 font-bold rounded-lg text-[11px] hover:bg-emerald-400"
+                          >
+                            Verify
+                          </button>
+                          <button
+                            onClick={() => handleVerify(doc.id, 'REJECTED')}
+                            className="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800 rounded-lg text-[11px] hover:bg-rose-900"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))
@@ -122,6 +134,20 @@ export default function AdminDocumentsPage() {
           </tbody>
         </table>
       </div>
+
+      {/* Document Viewer Modal */}
+      {selectedDoc && (
+        <DocumentViewerModal
+          isOpen={!!selectedDoc}
+          onClose={() => setSelectedDoc(null)}
+          documentTitle={selectedDoc.title}
+          documentType={selectedDoc.documentType}
+          fileUrl={selectedDoc.fileUrl}
+          tenantName={selectedDoc.tenant?.fullName}
+          status={selectedDoc.status}
+        />
+      )}
     </div>
   );
 }
+

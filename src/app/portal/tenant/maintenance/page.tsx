@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Wrench, Plus, CheckCircle2, Clock, AlertCircle, Upload } from 'lucide-react';
+import { Wrench, Plus, CheckCircle2, Clock, AlertCircle, Upload, Image as ImageIcon } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { FileUploadZone } from '@/components/shared/FileUploadZone';
 
 export default function TenantMaintenancePage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -12,7 +13,7 @@ export default function TenantMaintenancePage() {
     category: 'PLUMBING',
     priority: 'MEDIUM',
     description: '',
-    photosUrl: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
+    photosUrl: '',
   });
 
   const fetchTickets = async () => {
@@ -43,7 +44,7 @@ export default function TenantMaintenancePage() {
           category: 'PLUMBING',
           priority: 'MEDIUM',
           description: '',
-          photosUrl: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=600&q=80',
+          photosUrl: '',
         });
         fetchTickets();
       }
@@ -97,6 +98,15 @@ export default function TenantMaintenancePage() {
               <h3 className="font-bold text-white text-base mt-1">{ticket.title}</h3>
               <p className="text-xs text-slate-300 mt-2 leading-relaxed">{ticket.description}</p>
 
+              {ticket.photosUrl && (
+                <div className="mt-3">
+                  <span className="text-[10px] text-slate-400 font-semibold block mb-1">Attached Photo / Evidence:</span>
+                  <div className="w-24 h-24 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950">
+                    <img src={ticket.photosUrl} alt="Maintenance Issue" className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform" />
+                  </div>
+                </div>
+              )}
+
               {ticket.resolutionNotes && (
                 <div className="mt-3 bg-emerald-950/30 border border-emerald-500/20 p-3 rounded-2xl text-xs text-emerald-300">
                   <strong>Technician Update:</strong> {ticket.resolutionNotes}
@@ -114,8 +124,8 @@ export default function TenantMaintenancePage() {
 
       {/* Raise Ticket Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-150 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl my-8">
             <h3 className="text-lg font-bold text-white mb-4">Raise Maintenance Complaint</h3>
             <form onSubmit={handleCreateTicket} className="space-y-4">
               <div>
@@ -174,6 +184,19 @@ export default function TenantMaintenancePage() {
                 />
               </div>
 
+              {/* Upload Breakdown Photo */}
+              <div>
+                <FileUploadZone
+                  label="Upload Photo of Issue / Damage (Optional)"
+                  category="DOCUMENTS"
+                  mode="compact"
+                  value={newTicket.photosUrl}
+                  helperText="Upload a photo showing the damaged pipe, circuit, or fixture"
+                  onUploadSuccess={(fileData) => setNewTicket((prev) => ({ ...prev, photosUrl: fileData.url }))}
+                  onRemove={() => setNewTicket((prev) => ({ ...prev, photosUrl: '' }))}
+                />
+              </div>
+
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
@@ -196,3 +219,4 @@ export default function TenantMaintenancePage() {
     </div>
   );
 }
+
