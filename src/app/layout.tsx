@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Footer } from '@/components/layout/Footer';
 import { EmergencyBanner } from '@/components/layout/EmergencyBanner';
 import { AiConciergeChat } from '@/components/ai/AiConciergeChat';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
@@ -27,10 +28,11 @@ export default function RootLayout({
           <Navbar />
           <div className="flex-1 flex w-full">
             <Sidebar />
-            <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">{children}</main>
+            <main className="flex-1 p-3.5 sm:p-5 lg:p-8 pb-24 lg:pb-8 overflow-x-hidden">{children}</main>
           </div>
           <Footer />
           <AiConciergeChat />
+          <MobileBottomNav />
           <Analytics />
         </AuthProvider>
       </body>
