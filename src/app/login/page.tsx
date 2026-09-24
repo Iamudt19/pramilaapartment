@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { Building2, Lock, Mail, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Building2, Lock, Mail, ArrowRight, AlertCircle, Sparkles, Shield, User } from 'lucide-react';
 
 export default function LoginPage() {
   const { login, loading } = useAuth();
@@ -21,30 +21,44 @@ export default function LoginPage() {
   };
 
   const quickRoles = [
-    { label: 'Super Admin', email: 'admin@pramila.com', badge: 'Full Access' },
-    { label: 'Property Manager', email: 'manager@pramila.com', badge: 'Operations' },
-    { label: 'Accountant', email: 'accountant@pramila.com', badge: 'Finance' },
-    { label: 'Security Guard', email: 'security@pramila.com', badge: 'Gate Ops' },
-    { label: 'Maintenance Staff', email: 'maintenance@pramila.com', badge: 'Technician' },
-    { label: 'Tenant (Flat A-101)', email: 'tenant1@pramila.com', badge: 'Resident' },
-    { label: 'Tenant (Flat A-201)', email: 'tenant2@pramila.com', badge: 'Resident' },
+    {
+      label: 'Administrator (Estate & Vacancy Manager)',
+      email: 'admin@pramila.com',
+      badge: 'Admin Access',
+      icon: Shield,
+      desc: 'Vacancy listing, tenant approvals, gate passes, billing & settings',
+    },
+    {
+      label: 'Resident / Tenant (Flat A-101)',
+      email: 'tenant1@pramila.com',
+      badge: 'Tenant Access',
+      icon: User,
+      desc: 'Pay rent & sub-meter bills, issue visitor QR passes, complaints',
+    },
+    {
+      label: 'Resident / Tenant (Flat A-201)',
+      email: 'tenant2@pramila.com',
+      badge: 'Tenant Access',
+      icon: User,
+      desc: 'Active tenancy portal for Flat A-201',
+    },
   ];
 
   return (
     <div className="max-w-md mx-auto py-8">
-      <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl">
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center mx-auto shadow-sm mb-3">
+      <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl space-y-6">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center justify-center mx-auto shadow-sm mb-3">
             <Building2 className="w-6 h-6" />
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">Pramila Apartments</h2>
-          <p className="text-xs text-slate-500 mt-1">Sign in to your authenticated portal</p>
+          <p className="text-xs text-slate-500 mt-1">Sign in to your authenticated portal (Tenant / Admin)</p>
         </div>
 
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-2xl text-xs flex items-center gap-2 mb-4">
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-2xl text-xs flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{error}</span>
+            <span className="font-bold">{error}</span>
           </div>
         )}
 
@@ -88,43 +102,55 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Quick Demo Credentials */}
-        <div className="mt-6 pt-5 border-t border-slate-200">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> 1-Click Role Accounts (Demo)
+        {/* 1-Click Role Accounts */}
+        <div className="pt-4 border-t border-slate-200">
+          <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-500 mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> 1-Click Fast Login
           </div>
 
-          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-            {quickRoles.map((r) => (
-              <button
-                key={r.email}
-                type="button"
-                onClick={() => {
-                  setEmail(r.email);
-                  setPassword('Password@123');
-                }}
-                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-between border transition-all ${
-                  email === r.email
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
-                }`}
-              >
-                <div>
-                  <span className="font-bold block">{r.label}</span>
-                  <span className="text-[10px] text-slate-500">{r.email}</span>
-                </div>
-                <span className="text-[10px] bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded font-mono font-medium">
-                  {r.badge}
-                </span>
-              </button>
-            ))}
+          <div className="space-y-2">
+            {quickRoles.map((r) => {
+              const Icon = r.icon;
+              const isSelected = email === r.email;
+              return (
+                <button
+                  key={r.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(r.email);
+                    setPassword('Password@123');
+                  }}
+                  className={`w-full text-left p-3 rounded-2xl text-xs flex items-start justify-between border transition-all ${
+                    isSelected
+                      ? 'bg-emerald-50 border-emerald-300 shadow-sm'
+                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <div className="flex items-start gap-2.5">
+                    <div className={`p-1.5 rounded-xl ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-extrabold text-slate-900 block">{r.label}</span>
+                      <span className="text-[10px] text-slate-500">{r.email}</span>
+                      <p className="text-[10px] text-slate-600 mt-0.5 font-medium">{r.desc}</p>
+                    </div>
+                  </div>
+                  <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                    isSelected ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200'
+                  }`}>
+                    {r.badge}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        <div className="mt-6 text-center text-xs text-slate-500">
-          New resident?{' '}
+        <div className="text-center text-xs text-slate-500">
+          New prospective tenant?{' '}
           <Link href="/register" className="text-emerald-700 hover:underline font-bold">
-            Submit Tenant Registration Application
+            Apply for Flat Lease
           </Link>
         </div>
       </div>

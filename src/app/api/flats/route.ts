@@ -5,10 +5,14 @@ import { logAudit } from '@/lib/audit';
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = await requireAuth(req);
-    if ('error' in auth) return auth.error;
-
     const { searchParams } = new URL(req.url);
+    const isPublic = searchParams.get('public') === 'true';
+
+    if (!isPublic) {
+      const auth = await requireAuth(req);
+      if ('error' in auth) return auth.error;
+    }
+
     const buildingId = searchParams.get('buildingId');
     const status = searchParams.get('status');
     const search = searchParams.get('search');

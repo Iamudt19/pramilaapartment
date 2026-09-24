@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
@@ -28,16 +28,56 @@ import {
   Compass,
   Key,
   X,
+  Calculator,
+  Eye,
+  Sliders,
+  Star,
+  Clock,
+  ExternalLink,
+  Shield,
+  Layers,
+  Award,
 } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 
 export default function LandingPage() {
   const router = useRouter();
   const { user } = useAuth();
+
+  // State
+  const [vacantFlats, setVacantFlats] = useState<any[]>([]);
+  const [loadingFlats, setLoadingFlats] = useState(true);
   const [inquiryModal, setInquiryModal] = useState(false);
+  const [selectedFlatForInquiry, setSelectedFlatForInquiry] = useState<any>(null);
   const [selectedSuite, setSelectedSuite] = useState('Surya 2BHK Deluxe');
   const [inquiryName, setInquiryName] = useState('');
   const [inquiryPhone, setInquiryPhone] = useState('');
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
+
+  // Interactive Calculator State
+  const [calcUnits, setCalcUnits] = useState(150);
+  const [calcBaseRent, setCalcBaseRent] = useState(22000);
+  const [activeFloorTab, setActiveFloorTab] = useState<'master' | 'living' | 'kitchen' | 'balcony' | 'bath'>('master');
+
+  // Fetch Live Vacancies from Database
+  useEffect(() => {
+    const fetchVacancies = async () => {
+      try {
+        const res = await fetch('/api/flats?public=true');
+        if (res.ok) {
+          const data = await res.json();
+          const allFlats = data.flats || [];
+          const vac = allFlats.filter((f: any) => f.status === 'VACANT');
+          setVacantFlats(vac);
+        }
+      } catch (e) {
+        console.error('Failed to load vacancies:', e);
+      } finally {
+        setLoadingFlats(false);
+      }
+    };
+    fetchVacancies();
+  }, []);
 
   const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,16 +87,56 @@ export default function LandingPage() {
       setInquiryModal(false);
       setInquiryName('');
       setInquiryPhone('');
+      setSelectedFlatForInquiry(null);
     }, 2500);
   };
 
-  const openTenantPortal = () => {
-    if (user?.role === 'TENANT') {
-      router.push('/portal/tenant');
-    } else {
-      router.push('/login');
-    }
+  const handleOpenFlatInquiry = (flat: any) => {
+    setSelectedFlatForInquiry(flat);
+    setSelectedSuite(`Flat ${flat.flatNumber} (${flat.flatType})`);
+    setInquiryModal(true);
   };
+
+  // Calculator Computations
+  const electricityRate = 10.0;
+  const estimatedElectricity = calcUnits * electricityRate;
+  const waterCharges = 0; // Included/Fixed
+  const totalEstimatedMonthly = calcBaseRent + estimatedElectricity + waterCharges;
+
+  const roomSpecs = {
+    master: {
+      title: 'Master Bedroom with Private Balcony',
+      dims: '14 ft × 12 ft',
+      desc: 'Spacious master suite with direct floor-to-ceiling glass balcony access, abundant cross-ventilation, AC power conduit, and attached western bathroom.',
+      features: ['Private open road-facing balcony', 'Attached luxury bathroom', 'Large wardrobe niche', 'Direct morning sunlight'],
+    },
+    living: {
+      title: 'Grand Living & Dining Lounge',
+      dims: '18 ft × 12 ft',
+      desc: 'Expansive family gathering space with premium vitrified tile flooring, wide entryway, multiple power outlets, and fiber broadband hookup.',
+      features: ['Spacious sofa & dining area', 'High-speed optical fiber ready', 'Intercom & digital gate access', 'Cross-breeze airflow'],
+    },
+    kitchen: {
+      title: 'Modern Modular Kitchen & Utility',
+      dims: '10 ft × 8 ft',
+      desc: 'Black granite countertop, dual water supply line (24x7 fresh deep borewell), exhaust and chimney provision, and dedicated utility wash area.',
+      features: ['Granite cooking platform with SS sink', '24x7 continuous pressurized water', 'Dedicated refrigerator bay', 'Exhaust & RO point'],
+    },
+    balcony: {
+      title: 'Open Sunlit Road-Facing Balcony',
+      dims: '12 ft × 5 ft',
+      desc: 'Private open-air sitout overlooking lush greenery and DMCH road with heavy-duty safety railings and natural daylight all day long.',
+      features: ['Unobstructed front views', 'Weather-proof safety grill', 'Planting & relaxation space', 'Fresh morning breeze'],
+    },
+    bath: {
+      title: 'Dual Western Designer Bathrooms',
+      dims: '8 ft × 6 ft each',
+      desc: 'Anti-skid ceramic flooring, branded CP sanitary fittings, hot/cold mixer points, and high-efficiency ventilation.',
+      features: ['Anti-skid floor tiles', 'Geyser electrical point', 'Branded sanitary ware', 'Independent drainage pipes'],
+    },
+  };
+
+  const currentRoom = roomSpecs[activeFloorTab];
 
   const features = [
     {
@@ -146,361 +226,443 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen -mt-4 lg:-mt-8 -mx-4 lg:-mx-8 space-y-24 pb-20 overflow-x-hidden bg-slate-50 text-slate-900">
-      {/* 🌟 1. Full-Screen Cinematic Bright Hero Section */}
-      <section className="relative min-h-[90vh] lg:min-h-[95vh] flex flex-col justify-between items-center text-center px-4 sm:px-8 py-12 sm:py-16 overflow-hidden">
-        {/* Real Building Background with High-End Light Luxury Overlay */}
+    <div className="min-h-screen -mt-4 lg:-mt-8 -mx-4 lg:-mx-8 space-y-20 pb-20 overflow-x-hidden bg-slate-50 text-slate-900">
+      {/* 🌟 1. HIGH-IMPACT LUXURY HERO SECTION */}
+      <section className="relative min-h-[92vh] lg:min-h-[96vh] flex flex-col justify-between items-center text-center px-4 sm:px-8 py-10 sm:py-14 overflow-hidden">
+        {/* Real Building Photograph with Luxury Light Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-105 transition-transform duration-1000"
           style={{ backgroundImage: "url('/images/building.png')" }}
         />
-        {/* Bright Luxury Vignette Overlays */}
+        {/* Light Glass Vignette Overlays */}
         <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/80 to-white/95" />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-white/60 to-white/90" />
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-white/50 to-white/90" />
 
-        {/* Top Header Badge */}
-        <div className="relative z-10 pt-4 flex flex-col items-center gap-3">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-slate-200 backdrop-blur-md text-slate-700 text-xs tracking-widest uppercase font-bold shadow-md">
+        {/* Top Floating Pill Badges */}
+        <div className="relative z-10 pt-2 flex flex-wrap justify-center items-center gap-2 sm:gap-3">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-slate-200 backdrop-blur-md text-slate-800 text-xs font-bold shadow-sm">
             <Compass className="w-3.5 h-3.5 text-emerald-600" />
-            <span>500 Meters from DMCH • Darbhanga, Bihar</span>
+            <span>500m from DMCH Hospital • Darbhanga, Bihar</span>
+          </div>
+
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
+            <span>{loadingFlats ? 'Checking Vacancies...' : `${vacantFlats.length} Vacant 2BHK Units Listed Live`}</span>
+          </div>
+
+          <div className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+            <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+            <span>4.9/5 Doctor & Family Rating</span>
           </div>
         </div>
 
         {/* Center Hero Typography */}
         <div className="relative z-10 max-w-4xl mx-auto space-y-6 my-auto">
-          {/* Metallic Logo */}
-          <div className="flex justify-center pb-2">
-            <img
-              src="/images/logo.png"
-              alt="Pramila Apartment Logo"
-              className="h-16 sm:h-24 w-auto object-contain drop-shadow-md"
-            />
+          <div className="flex justify-center pb-1">
+            <div className="p-3 bg-white/90 rounded-2xl border border-slate-200 shadow-md">
+              <img
+                src="/images/logo.png"
+                alt="Pramila Apartment Logo"
+                className="h-14 sm:h-20 w-auto object-contain"
+              />
+            </div>
           </div>
 
-          <h1 className="font-serif-luxury text-5xl sm:text-7xl lg:text-8xl tracking-tight text-slate-950 leading-[1.05] drop-shadow-sm font-black">
+          <h1 className="font-serif-luxury text-4xl sm:text-6xl lg:text-7xl tracking-tight text-slate-950 leading-[1.08] font-black drop-shadow-sm">
             Pramila Apartments
           </h1>
 
-          <p className="font-cormorant italic text-xl sm:text-3xl text-slate-700 max-w-2xl mx-auto font-medium tracking-wide">
-            Magical luxury living & spacious 2BHK residences situated in the prestigious DMCH vicinity
+          <p className="font-cormorant italic text-xl sm:text-3xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed">
+            Executive 2BHK residences with sunlit balconies, 24x7 water, and gated security in the prestigious DMCH medical vicinity.
           </p>
 
-          {/* Hero CTAs */}
-          <div className="pt-4 flex flex-wrap justify-center items-center gap-4">
+          {/* Action CTAs */}
+          <div className="pt-2 flex flex-wrap justify-center items-center gap-3.5">
             <a
-              href="#suites"
-              className="px-8 py-3.5 border-2 border-slate-900 hover:bg-slate-900 hover:text-white text-slate-900 text-xs sm:text-sm font-bold tracking-[0.15em] uppercase transition-all duration-300 backdrop-blur-sm rounded-2xl shadow-lg"
+              href="#vacancies"
+              className="px-7 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-black tracking-[0.1em] uppercase transition-all shadow-xl shadow-emerald-600/25 rounded-2xl flex items-center gap-2"
             >
-              Explore 2BHK Suites
+              <span>View Live Available Flats ({vacantFlats.length})</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+
+            <a
+              href="#calculator"
+              className="px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-800 text-xs sm:text-sm font-bold tracking-[0.1em] uppercase border border-slate-300 rounded-2xl shadow-sm transition-all flex items-center gap-2"
+            >
+              <Calculator className="w-4 h-4 text-emerald-600" />
+              <span>Rent & Utility Estimator</span>
             </a>
 
             <button
               onClick={() => setInquiryModal(true)}
-              className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-black tracking-[0.15em] uppercase transition-all shadow-xl shadow-emerald-600/25 rounded-2xl"
+              className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-bold tracking-[0.1em] uppercase rounded-2xl shadow-md transition-all"
             >
-              Inquire Now
+              Schedule Walkthrough
             </button>
           </div>
         </div>
 
-        {/* Subtle Bottom Scroll Indicator */}
-        <div className="relative z-10 pb-4 text-slate-500 text-xs tracking-[0.25em] uppercase flex flex-col items-center gap-2">
-          <span className="font-bold">Scroll Down</span>
-          <div className="w-[2px] h-8 bg-gradient-to-b from-emerald-600 to-transparent animate-pulse" />
-        </div>
-      </section>
-
-      {/* 🌟 2. Docked Availability Widget (Bright White Card) */}
-      <div className="max-w-5xl mx-auto px-4 -mt-16 sm:-mt-20 relative z-20">
-        <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl p-6 sm:p-8 backdrop-blur-2xl">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
-            {/* Move-in Date */}
-            <div className="border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 md:pr-4">
-              <label className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-extrabold block mb-1">
-                Expected Move-In
-              </label>
-              <div className="flex items-center gap-2.5">
-                <Calendar className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="text-sm sm:text-base font-black text-slate-900">Immediate / Ready</div>
-                  <div className="text-[10px] text-slate-500 font-medium">Ready for possession</div>
-                </div>
-              </div>
+        {/* Floating Proximity Strip */}
+        <div className="relative z-10 w-full max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 text-left">
+          <div className="bg-white/95 p-3.5 rounded-2xl border border-slate-200 shadow-sm backdrop-blur-md">
+            <div className="text-[10px] text-slate-500 font-extrabold uppercase">Hospital Vicinity</div>
+            <div className="text-sm font-black text-slate-900 flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> 500m to DMCH Gate
             </div>
-
-            {/* Flat Type */}
-            <div className="border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 md:pr-4">
-              <label className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-extrabold block mb-1">
-                Residence Type
-              </label>
-              <div className="flex items-center gap-2.5">
-                <Building2 className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="text-sm sm:text-base font-black text-slate-900">Spacious 2BHK Flat</div>
-                  <div className="text-[10px] text-slate-500 font-medium">Balcony & Kitchen</div>
-                </div>
-              </div>
+          </div>
+          <div className="bg-white/95 p-3.5 rounded-2xl border border-slate-200 shadow-sm backdrop-blur-md">
+            <div className="text-[10px] text-slate-500 font-extrabold uppercase">Fresh Water 24x7</div>
+            <div className="text-sm font-black text-slate-900 flex items-center gap-1 mt-0.5">
+              <Droplets className="w-3.5 h-3.5 text-blue-600 shrink-0" /> Dual Deep Borewells
             </div>
-
-            {/* Target Occupancy */}
-            <div className="border-b md:border-b-0 md:border-r border-slate-200 pb-4 md:pb-0 md:pr-4">
-              <label className="text-[11px] uppercase tracking-[0.2em] text-slate-500 font-extrabold block mb-1">
-                Occupancy
-              </label>
-              <div className="flex items-center gap-2.5">
-                <Users className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <div className="text-sm sm:text-base font-black text-slate-900">Doctors & Families</div>
-                  <div className="text-[10px] text-slate-500 font-medium">Civilized Community</div>
-                </div>
-              </div>
+          </div>
+          <div className="bg-white/95 p-3.5 rounded-2xl border border-slate-200 shadow-sm backdrop-blur-md">
+            <div className="text-[10px] text-slate-500 font-extrabold uppercase">Sub-Meter System</div>
+            <div className="text-sm font-black text-slate-900 flex items-center gap-1 mt-0.5">
+              <Zap className="w-3.5 h-3.5 text-amber-600 shrink-0" /> Individual Digital Meter
             </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col gap-2">
-              <Link
-                href="/register"
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-[0.15em] text-center rounded-xl shadow-lg shadow-emerald-600/20 transition-all"
-              >
-                Apply Online
-              </Link>
-              <button
-                onClick={() => setInquiryModal(true)}
-                className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold text-xs uppercase tracking-[0.1em] rounded-xl transition-all"
-              >
-                Inquire Now
-              </button>
+          </div>
+          <div className="bg-white/95 p-3.5 rounded-2xl border border-slate-200 shadow-sm backdrop-blur-md">
+            <div className="text-[10px] text-slate-500 font-extrabold uppercase">Gated Community</div>
+            <div className="text-sm font-black text-slate-900 flex items-center gap-1 mt-0.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" /> CCTV & QR Gate Pass
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* 🌟 3. Editorial Story Section (White Luxury Theme) */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          {/* Left: Building Photo with Luxury White Styling */}
-          <div className="lg:col-span-6 relative">
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-slate-200 group bg-white">
-              <img
-                src="/images/building.png"
-                alt="Pramila Apartments Building Architecture"
-                className="w-full h-[420px] sm:h-[500px] object-cover group-hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 text-white space-y-1">
-                <span className="text-[10px] uppercase tracking-[0.25em] text-emerald-400 font-extrabold">
-                  Exterior Architecture
+      {/* 🌟 2. LIVE VACANT FLATS SHOWCASE (ADMIN SYNCED REAL-TIME) */}
+      <section id="vacancies" className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+        <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4 border-b border-slate-200 pb-6">
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black uppercase tracking-wider mb-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
+              Live Database Vacancies
+            </span>
+            <h2 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900">
+              Available 2BHK Residences Right Now
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-normal mt-1 max-w-xl">
+              Real-time flat vacancies listed directly by property management. Ready for immediate lease & occupancy.
+            </p>
+          </div>
+
+          <div className="text-right">
+            <span className="text-2xl font-black text-emerald-700">{vacantFlats.length} Units</span>
+            <span className="text-xs text-slate-500 block font-semibold">Available for Immediate Move-In</span>
+          </div>
+        </div>
+
+        {loadingFlats ? (
+          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-2">
+            <div className="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            <p className="text-xs font-bold text-slate-600">Loading live vacancies from property database...</p>
+          </div>
+        ) : vacantFlats.length === 0 ? (
+          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm space-y-4">
+            <div className="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900">100% Fully Occupied Society</h3>
+            <p className="text-xs text-slate-600 max-w-md mx-auto">
+              All flats are currently occupied by long-term resident doctors and families. Submit a priority waitlist inquiry to be notified immediately when a flat becomes available!
+            </p>
+            <button
+              onClick={() => setInquiryModal(true)}
+              className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl text-xs shadow-md shadow-emerald-600/20"
+            >
+              Join Priority Move-in Waitlist
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {vacantFlats.map((flat) => (
+              <div
+                key={flat.id}
+                className="bg-white rounded-3xl border border-slate-200 shadow-md hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:border-emerald-500"
+              >
+                <div>
+                  {/* Photo Header */}
+                  <div className="relative h-48 bg-slate-100 overflow-hidden">
+                    <img
+                      src="/images/building.png"
+                      alt={`Flat ${flat.flatNumber}`}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
+
+                    <div className="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-md">
+                      🟢 Vacant • Ready Move-In
+                    </div>
+
+                    <div className="absolute bottom-3 left-3 right-3 text-white flex justify-between items-end">
+                      <div>
+                        <span className="font-mono text-xl font-black block">Flat {flat.flatNumber}</span>
+                        <span className="text-[11px] text-slate-200">
+                          {flat.building?.name} • Floor {flat.floor?.floorNumber ?? '1'}
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-lg font-black text-emerald-300 block">{formatCurrency(flat.monthlyRent)}</span>
+                        <span className="text-[10px] text-slate-300">/month</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="p-5 space-y-3.5">
+                    <div className="flex items-center justify-between text-xs text-slate-600 pb-3 border-b border-slate-100 font-medium">
+                      <span>{flat.flatType} Luxury Layout</span>
+                      <span>{flat.areaSqFt} sq.ft</span>
+                      <span>{flat.bedrooms} BHK</span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      {flat.notes || 'Sunlit private balcony with road view, continuous water supply, and individual electric sub-meter.'}
+                    </p>
+
+                    <div className="space-y-1 text-[11px] text-slate-700 bg-slate-50 p-3 rounded-2xl border border-slate-200 font-medium">
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Security Deposit:</span>
+                        <span className="font-bold text-slate-900">{formatCurrency(flat.deposit)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Maintenance:</span>
+                        <span className="font-bold text-slate-900">{formatCurrency(flat.maintenance)}/mo</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Sub-Meter Electricity:</span>
+                        <span className="font-bold text-emerald-700">₹10.0 / unit (Actual)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Actions */}
+                <div className="p-5 pt-0 grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => handleOpenFlatInquiry(flat)}
+                    className="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs border border-slate-300 transition-all text-center"
+                  >
+                    Book Walkthrough
+                  </button>
+                  <Link
+                    href={`/register?flat=${flat.flatNumber}`}
+                    className="py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs shadow-md shadow-emerald-600/20 transition-all text-center"
+                  >
+                    Apply for Flat →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 🌟 3. INTERACTIVE LIVING COST & SUB-METER TARIFF ESTIMATOR */}
+      <section id="calculator" className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-xl space-y-8">
+          <div className="max-w-2xl space-y-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+              <Calculator className="w-3.5 h-3.5 text-emerald-600" /> Transparent Zero-Confusion Billing
+            </span>
+            <h3 className="font-serif-luxury text-3xl sm:text-4xl font-black text-slate-900">
+              Interactive Monthly Cost Estimator
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-600">
+              Simulate your exact monthly living expenses at Pramila Apartments with independent electric sub-meter readings.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Sliders */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Rent Selection */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-xs font-bold text-slate-800">
+                  <span>Selected 2BHK Flat Base Rent</span>
+                  <span className="text-emerald-700 text-sm font-black">{formatCurrency(calcBaseRent)}/mo</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setCalcBaseRent(22000)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      calcBaseRent === 22000
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    Surya 2BHK (₹22,000)
+                  </button>
+                  <button
+                    onClick={() => setCalcBaseRent(25000)}
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border transition-all ${
+                      calcBaseRent === 25000
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    Chandra 2BHK Exec (₹25,000)
+                  </button>
+                </div>
+              </div>
+
+              {/* Electricity Units Slider */}
+              <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-extrabold text-slate-800 block">Estimated Monthly Electricity Usage</span>
+                    <span className="text-[11px] text-slate-500">Tariff: ₹{electricityRate.toFixed(2)} per unit</span>
+                  </div>
+                  <span className="font-mono text-base font-black text-emerald-700 bg-white px-3 py-1 rounded-xl border border-slate-200 shadow-sm">
+                    {calcUnits} Units
+                  </span>
+                </div>
+
+                <input
+                  type="range"
+                  min="0"
+                  max="400"
+                  step="10"
+                  value={calcUnits}
+                  onChange={(e) => setCalcUnits(parseInt(e.target.value))}
+                  className="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-200 rounded-lg"
+                />
+
+                <div className="flex justify-between text-[10px] text-slate-400 font-bold">
+                  <span>0 Units (Minimal)</span>
+                  <span>150 Units (Average 2BHK)</span>
+                  <span>300+ Units (Summer AC)</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Computed Summary Card */}
+            <div className="lg:col-span-5 bg-gradient-to-br from-emerald-50 via-teal-50 to-white p-6 sm:p-7 rounded-3xl border border-emerald-200 shadow-md space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b border-emerald-200">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-900">Total Monthly Estimate</span>
+                <span className="text-[10px] bg-emerald-600 text-white font-bold px-2.5 py-0.5 rounded-full">
+                  Idempotent Billing
                 </span>
-                <h3 className="font-serif-luxury text-2xl font-bold text-white">Pramila Apartments</h3>
-                <p className="text-xs text-slate-200">Executive residential building with expansive balconies & covered parking</p>
               </div>
-            </div>
-          </div>
 
-          {/* Right: Editorial Narrative */}
-          <div className="lg:col-span-6 space-y-6">
-            <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-700">
-                Prime Darbhanga Address
-              </span>
-              <h2 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight">
-                A Peaceful Sanctuary Near DMCH
-              </h2>
-            </div>
-
-            <p className="text-slate-700 text-sm sm:text-base leading-relaxed font-normal">
-              Located in the esteemed DMCH Road neighborhood, Pramila Apartments offers an executive residential address that combines tranquil living with instant connectivity.
-            </p>
-
-            <p className="text-slate-600 text-xs sm:text-sm leading-relaxed font-normal">
-              Situated precisely 500 meters from Darbhanga Medical College & Hospital, each spacious 2BHK flat is thoughtfully crafted with open private balconies, continuous deep-borewell water, round-the-clock CCTV surveillance, individual electric sub-meters, and covered parking.
-            </p>
-
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200">
-              <div className="space-y-1">
-                <div className="text-2xl font-serif-luxury font-bold text-slate-900">500 Mts</div>
-                <div className="text-xs text-slate-500 font-medium">Walking distance to DMCH Hospital</div>
+              <div className="space-y-2.5 text-xs text-slate-700">
+                <div className="flex justify-between">
+                  <span>Monthly Apartment Rent:</span>
+                  <span className="font-bold text-slate-900">{formatCurrency(calcBaseRent)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Sub-Meter Power ({calcUnits} units @ ₹10):</span>
+                  <span className="font-bold text-slate-900">{formatCurrency(estimatedElectricity)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>24x7 Deep Borewell Water Supply:</span>
+                  <span className="font-bold text-emerald-700">Included (Free)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>CCTV & Gated Security:</span>
+                  <span className="font-bold text-emerald-700">Included (Free)</span>
+                </div>
               </div>
-              <div className="space-y-1">
-                <div className="text-2xl font-serif-luxury font-bold text-slate-900">2BHK</div>
-                <div className="text-xs text-slate-500 font-medium">Sunlit, ventilated residential flats</div>
-              </div>
-            </div>
 
-            <div className="pt-2">
-              <button
-                onClick={() => setInquiryModal(true)}
-                className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs uppercase tracking-[0.15em] font-bold shadow-md transition-all"
-              >
-                Schedule Private Viewing →
-              </button>
+              <div className="pt-3 border-t border-emerald-200 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] text-slate-500 font-extrabold uppercase block">Est. Total Monthly</span>
+                  <span className="text-2xl font-black text-slate-950">{formatCurrency(totalEstimatedMonthly)}</span>
+                </div>
+                <button
+                  onClick={() => setInquiryModal(true)}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl text-xs shadow-md shadow-emerald-600/20 transition-all"
+                >
+                  Book Visit
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 🌟 4. Apartment Suites Showcase (White Cards) */}
-      <section id="suites" className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
-          <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-emerald-700">
-            Available Residences
+      {/* 🌟 4. INTERACTIVE 2BHK ROOM-BY-ROOM FLOOR PLAN INSPECTOR */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-bold">
+            <Layers className="w-3.5 h-3.5 text-emerald-600" /> Architectural Layout
           </span>
-          <h2 className="font-serif-luxury text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900">
-            Curated 2BHK Flat Configurations
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-600 font-normal">
-            Designed for superior living comfort, privacy, natural airflow, and effortless maintenance.
+          <h3 className="font-serif-luxury text-3xl sm:text-4xl font-black text-slate-900">
+            Interactive 2BHK Room-by-Room Inspection
+          </h3>
+          <p className="text-xs sm:text-sm text-slate-600">
+            Click across the flat areas to inspect dimensions, natural daylight airflow, and electrical points.
           </p>
         </div>
 
-        <div className="space-y-12">
-          {/* Suite 1: Surya 2BHK Deluxe */}
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12">
-            {/* Left Photo */}
-            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto min-h-[320px]">
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: "url('/images/building.png')" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-r from-slate-950/40 via-transparent to-white" />
-              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-slate-200 text-[10px] text-slate-900 font-extrabold uppercase tracking-wider shadow-md">
-                Tower A • Balcony Facing
-              </div>
+        {/* Room Switcher Tabs */}
+        <div className="flex justify-center">
+          <div className="inline-flex p-1 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-x-auto max-w-full">
+            {[
+              { id: 'master', label: 'Master Bed & Balcony' },
+              { id: 'living', label: 'Living & Dining Hall' },
+              { id: 'kitchen', label: 'Modular Kitchen' },
+              { id: 'balcony', label: 'Road View Balcony' },
+              { id: 'bath', label: 'Dual Bathrooms' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveFloorTab(tab.id as any)}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  activeFloorTab === tab.id
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Room Details Interactive Display */}
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-7 space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="font-mono text-sm font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
+                {currentRoom.dims}
+              </span>
+              <h4 className="font-serif-luxury text-2xl font-bold text-slate-900">{currentRoom.title}</h4>
             </div>
 
-            {/* Right Details Block */}
-            <div className="lg:col-span-5 p-8 lg:p-10 flex flex-col justify-between space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-serif-luxury text-3xl font-black text-slate-900">Surya 2BHK Deluxe</h3>
-                  <p className="text-xs text-emerald-700 font-bold">Spacious 2-Bedroom Residential Suite</p>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{currentRoom.desc}</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+              {currentRoom.features.map((f, i) => (
+                <div key={i} className="flex items-center gap-2 text-xs text-slate-700 font-medium">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{f}</span>
                 </div>
-
-                <div className="text-xs text-slate-700 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center">
-                  <span className="font-medium text-slate-500">Target Occupants:</span>
-                  <span className="text-slate-900 font-bold">Families, Doctors, Medical PG</span>
-                </div>
-
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  A grand 2BHK flat featuring open sunlit balconies with clear road views, spacious living room, separate kitchen slab with 24x7 water line, and independent digital electric sub-meter.
-                </p>
-
-                <div className="space-y-2 pt-2 border-t border-slate-200 text-xs text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>2 Large Bedrooms with cross ventilation</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Private Balcony with panoramic natural light</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>24x7 Continuous Water & CCTV Security</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Dedicated Ground Floor Parking Bay</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setSelectedSuite('Surya 2BHK Deluxe');
-                    setInquiryModal(true);
-                  }}
-                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-[0.15em] rounded-xl text-center shadow-lg shadow-emerald-600/20 transition-all"
-                >
-                  Inquire Suite
-                </button>
-                <Link
-                  href="/register"
-                  className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-[0.1em] rounded-xl border border-slate-300 flex items-center justify-center transition-all"
-                >
-                  Apply Online
-                </Link>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* Suite 2: Chandra 2BHK Executive */}
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl grid grid-cols-1 lg:grid-cols-12">
-            {/* Left Details Block */}
-            <div className="lg:col-span-5 p-8 lg:p-10 flex flex-col justify-between space-y-6 order-2 lg:order-1">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-serif-luxury text-3xl font-black text-slate-900">Chandra 2BHK Executive</h3>
-                  <p className="text-xs text-emerald-700 font-bold">Premium Executive 2-Bedroom Suite</p>
-                </div>
-
-                <div className="text-xs text-slate-700 bg-slate-50 p-3.5 rounded-2xl border border-slate-200 flex justify-between items-center">
-                  <span className="font-medium text-slate-500">Target Occupants:</span>
-                  <span className="text-slate-900 font-bold">Senior Healthcare Staff & Executives</span>
-                </div>
-
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
-                  A modern executive flat with premium vitrified tiled finishing, dedicated study or work corner with high-speed fiber internet readiness, modern sanitary fittings, and serene acoustic quietness.
-                </p>
-
-                <div className="space-y-2 pt-2 border-t border-slate-200 text-xs text-slate-700">
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>500 Meters easy walk to DMCH main gate</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Independent sub-meter reading & online bills</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Gated security & active guard entry monitoring</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>On-call caretaker & maintenance response</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <button
-                  onClick={() => {
-                    setSelectedSuite('Chandra 2BHK Executive');
-                    setInquiryModal(true);
-                  }}
-                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-[0.15em] rounded-xl text-center shadow-lg shadow-emerald-600/20 transition-all"
-                >
-                  Inquire Suite
-                </button>
-                <Link
-                  href="/register"
-                  className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs uppercase tracking-[0.1em] rounded-xl border border-slate-300 flex items-center justify-center transition-all"
-                >
-                  Apply Online
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Photo */}
-            <div className="lg:col-span-7 relative h-72 sm:h-96 lg:h-auto min-h-[320px] order-1 lg:order-2">
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{ backgroundImage: "url('/images/building.png')" }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-l from-slate-950/40 via-transparent to-white" />
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full border border-slate-200 text-[10px] text-slate-900 font-extrabold uppercase tracking-wider shadow-md">
-                Tower B • Executive Wing
+          <div className="lg:col-span-5 relative h-56 sm:h-72 rounded-2xl overflow-hidden border border-slate-200 shadow-inner">
+            <img
+              src="/images/building.png"
+              alt="Room Inspection"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-4 text-white">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-emerald-400 block">Pramila Apartments Architecture</span>
+                <span className="font-bold text-sm">Spacious Cross-Ventilated 2BHK Layout</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 🌟 5. Complete Living Comfort & Amenities Grid (White Theme) */}
+      {/* 🌟 5. LIVING BENEFITS & AMENITIES GRID */}
       <section id="features" className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
-        <div className="text-center max-w-2xl mx-auto space-y-3">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-extrabold uppercase tracking-[0.25em] text-emerald-700">
             Comfort & Infrastructure
           </span>
@@ -550,78 +712,83 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 🌟 6. Resident Portal & Tenant Access (Bright Emerald/White Banner) */}
+      {/* 🌟 6. STREAMLINED 2-ROLE PORTALS (TENANTS & ADMIN) */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="rounded-3xl p-8 sm:p-12 border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-white shadow-xl relative overflow-hidden">
+        <div className="rounded-3xl p-8 sm:p-12 border border-emerald-200 bg-gradient-to-br from-emerald-50 via-teal-50 to-white shadow-xl">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-8 space-y-4">
+            <div className="lg:col-span-7 space-y-4">
               <span className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-600 text-white text-xs font-bold shadow-md shadow-emerald-600/20">
                 <Users className="w-3.5 h-3.5" />
-                <span>Existing Resident Portal</span>
+                <span>Authenticated Portal Access</span>
               </span>
               <h3 className="font-serif-luxury text-3xl sm:text-4xl font-black text-slate-900">
-                Manage Your Residence Online
+                Digital Living for Residents & Management
               </h3>
-              <p className="text-xs sm:text-sm text-slate-700 max-w-xl leading-relaxed font-normal">
-                Residents at Pramila Apartments can instantly pay rent and electricity sub-meter bills, download official payment receipts, generate cryptographic QR gate passes for visitors, and submit maintenance tickets.
+              <p className="text-xs sm:text-sm text-slate-700 max-w-xl leading-relaxed">
+                Seamless role separation: <strong>Tenants</strong> pay rent, download receipts, and issue QR visitor passes. <strong>Admin</strong> manages vacancies, leases, gate verification, and system settings.
               </p>
 
-              <div className="flex flex-wrap gap-4 pt-2">
-                <button
-                  onClick={openTenantPortal}
-                  className="px-7 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-[0.15em] rounded-2xl flex items-center gap-2 shadow-lg shadow-emerald-600/25 transition-all"
+              <div className="flex flex-wrap gap-3 pt-2">
+                <Link
+                  href="/portal/tenant"
+                  className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs uppercase tracking-[0.1em] rounded-2xl flex items-center gap-2 shadow-lg shadow-emerald-600/25 transition-all"
                 >
-                  <span>Launch Tenant Portal</span>
+                  <span>Resident Portal (Tenants)</span>
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </Link>
 
                 <Link
-                  href="/register"
-                  className="px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs uppercase tracking-[0.1em] rounded-2xl border border-slate-300 flex items-center gap-2 transition-all shadow-sm"
+                  href="/portal/admin"
+                  className="px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs uppercase tracking-[0.1em] rounded-2xl flex items-center gap-2 transition-all shadow-sm"
                 >
-                  <span>New Resident Onboarding</span>
+                  <Shield className="w-4 h-4 text-emerald-400" />
+                  <span>Admin & Vacancy Suite</span>
                 </Link>
               </div>
             </div>
 
-            <div className="lg:col-span-4 flex justify-center">
-              <div className="w-full max-w-xs p-6 bg-white rounded-3xl border border-slate-200 space-y-4 shadow-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                    <QrCode className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-slate-900">Instant QR Passes</h4>
-                    <p className="text-[10px] text-slate-500 font-medium">Zero wait gate check-in</p>
-                  </div>
+            <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                  <QrCode className="w-4 h-4 text-emerald-600" /> Instant QR Passes
                 </div>
+                <p className="text-[11px] text-slate-500">Zero wait gate clearance</p>
+              </div>
 
-                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-[11px] text-slate-700 space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 font-medium">Rent Invoices</span>
-                    <span className="text-emerald-700 font-bold">Instant Online</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 font-medium">Sub-Meter Bill</span>
-                    <span className="text-slate-900 font-bold">Meter Accurate</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-500 font-medium">Complaints Desk</span>
-                    <span className="text-slate-900 font-bold">Photo Verified</span>
-                  </div>
+              <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                  <Calculator className="w-4 h-4 text-blue-600" /> Sub-Meter Billing
                 </div>
+                <p className="text-[11px] text-slate-500">Meter accurate charges</p>
+              </div>
+
+              <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                  <Wrench className="w-4 h-4 text-purple-600" /> Complaints Desk
+                </div>
+                <p className="text-[11px] text-slate-500">Prompt caretaker care</p>
+              </div>
+
+              <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                <div className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" /> 24x7 Security
+                </div>
+                <p className="text-[11px] text-slate-500">CCTV & Guard on duty</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 📞 Inquiry Modal (White Theme) */}
+      {/* 📞 INQUIRY & WALKTHROUGH BOOKING MODAL */}
       {inquiryModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md animate-in fade-in">
           <div className="relative w-full max-w-md bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
             <button
-              onClick={() => setInquiryModal(false)}
+              onClick={() => {
+                setInquiryModal(false);
+                setSelectedFlatForInquiry(null);
+              }}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 rounded-xl hover:bg-slate-100"
             >
               <X className="w-5 h-5" />
@@ -631,7 +798,9 @@ export default function LandingPage() {
               <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto text-emerald-700 shadow-sm mb-3">
                 <Phone className="w-6 h-6 font-bold" />
               </div>
-              <h3 className="font-serif-luxury text-2xl font-bold text-slate-900">Inquire & Book a Visit</h3>
+              <h3 className="font-serif-luxury text-2xl font-bold text-slate-900">
+                {selectedFlatForInquiry ? `Inquire Flat ${selectedFlatForInquiry.flatNumber}` : 'Inquire & Book Walkthrough'}
+              </h3>
               <p className="text-xs text-slate-500 mt-1">Pramila Apartments • 500 Meters from DMCH</p>
             </div>
 
@@ -668,23 +837,22 @@ export default function LandingPage() {
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Preferred Suite</label>
-                  <select
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Inquiring For</label>
+                  <input
+                    type="text"
+                    readOnly
                     value={selectedSuite}
-                    onChange={(e) => setSelectedSuite(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
-                  >
-                    <option value="Surya 2BHK Deluxe">Surya 2BHK Deluxe Suite</option>
-                    <option value="Chandra 2BHK Executive">Chandra 2BHK Executive Suite</option>
-                    <option value="DOCTOR_STAFF">Doctor / Healthcare Professional Lease</option>
-                    <option value="FAMILY">Family Long-term Lease</option>
-                  </select>
+                    className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 font-bold"
+                  />
                 </div>
 
                 <div className="flex gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setInquiryModal(false)}
+                    onClick={() => {
+                      setInquiryModal(false);
+                      setSelectedFlatForInquiry(null);
+                    }}
                     className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl text-xs font-bold border border-slate-300"
                   >
                     Cancel
@@ -693,7 +861,7 @@ export default function LandingPage() {
                     type="submit"
                     className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20"
                   >
-                    Submit
+                    Submit Inquiry
                   </button>
                 </div>
               </form>
