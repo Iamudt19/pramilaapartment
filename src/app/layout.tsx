@@ -5,6 +5,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Footer } from '@/components/layout/Footer';
 import { EmergencyBanner } from '@/components/layout/EmergencyBanner';
+import { AiConciergeChat } from '@/components/ai/AiConciergeChat';
 
 export const metadata: Metadata = {
   title: 'Pramila Apartments — Full-Stack Apartment & Rental Management Platform',
@@ -28,6 +29,7 @@ export default function RootLayout({
             <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">{children}</main>
           </div>
           <Footer />
+          <AiConciergeChat />
         </AuthProvider>
       </body>
     </html>

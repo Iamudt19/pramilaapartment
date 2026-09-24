@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Receipt, Zap, Plus, Search, Filter, CheckCircle2, AlertCircle, FileText, ArrowRight } from 'lucide-react';
+import { Receipt, Zap, Plus, Search, Filter, CheckCircle2, AlertCircle, FileText, ArrowRight, Camera, Sparkles } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import { AiMeterScannerModal } from '@/components/ai/AiMeterScannerModal';
 
 export default function AdminBillsPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -11,6 +12,7 @@ export default function AdminBillsPage() {
   const [batchMsg, setBatchMsg] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [showAiMeterScanner, setShowAiMeterScanner] = useState(false);
 
   const fetchInvoices = async () => {
     try {
@@ -57,14 +59,31 @@ export default function AdminBillsPage() {
           <h1 className="text-2xl font-black text-white tracking-tight">Billing & Invoices Engine</h1>
           <p className="text-xs text-slate-400 mt-1">Generate recurring monthly rent, electricity unit charges, and track arrears</p>
         </div>
-        <button
-          onClick={handleGenerateMonthlyBatch}
-          disabled={generating}
-          className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
-        >
-          <Zap className="w-4 h-4" /> {generating ? 'Processing Invoices...' : 'Run Scheduled Monthly Billing Cycle'}
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setShowAiMeterScanner(true)}
+            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-extrabold rounded-xl text-xs flex items-center gap-2 border border-amber-500/40 shadow-md transition-all"
+          >
+            <Sparkles className="w-4 h-4 text-amber-400" /> Scan Sub-Meter with AI
+          </button>
+          <button
+            onClick={handleGenerateMonthlyBatch}
+            disabled={generating}
+            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+          >
+            <Zap className="w-4 h-4" /> {generating ? 'Processing Invoices...' : 'Run Scheduled Monthly Billing Cycle'}
+          </button>
+        </div>
       </div>
+
+      <AiMeterScannerModal
+        isOpen={showAiMeterScanner}
+        onClose={() => setShowAiMeterScanner(false)}
+        onApplyReading={(res) => {
+          setBatchMsg(`AI Reading applied for Flat ${res.flatNumber}: ${res.units} units (${formatCurrency(res.amount)})`);
+          fetchInvoices();
+        }}
+      />
 
       {batchMsg && (
         <div className="bg-emerald-950/40 border border-emerald-500/40 p-3.5 rounded-2xl text-xs text-emerald-300 flex items-center gap-2">

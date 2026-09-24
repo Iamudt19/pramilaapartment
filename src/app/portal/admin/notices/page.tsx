@@ -1,13 +1,15 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { BellRing, AlertTriangle, Plus, Pin, Radio } from 'lucide-react';
+import { BellRing, AlertTriangle, Plus, Pin, Radio, Sparkles } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { AiNoticeDrafterModal } from '@/components/ai/AiNoticeDrafterModal';
 
 export default function AdminNoticesPage() {
   const [notices, setNotices] = useState<any[]>([]);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [showEmergencyModal, setShowEmergencyModal] = useState(false);
+  const [showAiNoticeDrafter, setShowAiNoticeDrafter] = useState(false);
 
   const [newNotice, setNewNotice] = useState({
     title: '',
@@ -80,7 +82,13 @@ export default function AdminNoticesPage() {
           <h1 className="text-2xl font-black text-white tracking-tight">Notice Board & Emergency Broadcast</h1>
           <p className="text-xs text-slate-400 mt-1">Publish circulars, maintenance advisories, and trigger global emergency alerts</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setShowAiNoticeDrafter(true)}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-emerald-400 border border-emerald-500/40 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all"
+          >
+            <Sparkles className="w-4 h-4 text-emerald-400" /> AI Notice & WhatsApp Drafter
+          </button>
           <button
             onClick={() => setShowEmergencyModal(true)}
             className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-rose-600/30 transition-all"
@@ -95,6 +103,23 @@ export default function AdminNoticesPage() {
           </button>
         </div>
       </div>
+
+      <AiNoticeDrafterModal
+        isOpen={showAiNoticeDrafter}
+        onClose={() => setShowAiNoticeDrafter(false)}
+        onApplyNotice={async (gen) => {
+          try {
+            await fetch('/api/notices', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(gen),
+            });
+            fetchNotices();
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
 
       {/* Notices Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

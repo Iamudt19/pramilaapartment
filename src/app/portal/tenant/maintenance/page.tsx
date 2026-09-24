@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Wrench, Plus, CheckCircle2, Clock, AlertCircle, Upload, Image as ImageIcon } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { FileUploadZone } from '@/components/shared/FileUploadZone';
+import { AiMaintenanceAssistant } from '@/components/ai/AiMaintenanceAssistant';
 
 export default function TenantMaintenancePage() {
   const [requests, setRequests] = useState<any[]>([]);
@@ -183,6 +184,19 @@ export default function TenantMaintenancePage() {
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
                 />
               </div>
+
+              {/* AI Fault Diagnostics & Auto-Triage */}
+              <AiMaintenanceAssistant
+                title={newTicket.title}
+                description={newTicket.description}
+                onApplyTriage={(triage) => {
+                  setNewTicket((prev) => ({
+                    ...prev,
+                    category: triage.category,
+                    priority: triage.priority,
+                  }));
+                }}
+              />
 
               {/* Upload Breakdown Photo */}
               <div>

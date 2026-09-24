@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { QrCode, CheckCircle2, XCircle, Search, Clock, ArrowRight, User, Home, Download } from 'lucide-react';
+import { QrCode, CheckCircle2, XCircle, Search, Clock, ArrowRight, User, Home, Download, Sparkles } from 'lucide-react';
 import { formatDateTime, formatDate } from '@/lib/utils';
 import { QrPassCard } from '@/components/shared/QrPassCard';
+import { AiVisitorSecurityWidget } from '@/components/ai/AiVisitorSecurityWidget';
 
 export default function AdminVisitorsPage() {
   const [visitors, setVisitors] = useState<any[]>([]);
@@ -54,6 +55,9 @@ export default function AdminVisitorsPage() {
           <p className="text-xs text-slate-400 mt-1">Review requests, generate cryptographic QR passes, and audit gate entries</p>
         </div>
       </div>
+
+      {/* AI Gate Security & Anomaly Inspector */}
+      <AiVisitorSecurityWidget />
 
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
