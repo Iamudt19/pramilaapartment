@@ -18,11 +18,11 @@ export default function AdminPortalLayout({ children }: { children: React.ReactN
     setLoading(true);
 
     try {
-      const ok = await login('admin@pramila.com', adminPassword);
-      if (ok) {
+      const res = await login('admin@pramila.com', adminPassword);
+      if (res.success) {
         setAdminPassword('');
       } else {
-        setError('Incorrect Admin Password. Please enter Password@123 or check admin credentials.');
+        setError(res.error || 'Incorrect Admin Password. Please enter Password@123 or check admin credentials.');
       }
     } catch (err: any) {
       setError(err.message || 'Authentication error');

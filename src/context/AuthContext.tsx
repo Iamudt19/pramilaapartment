@@ -16,10 +16,15 @@ export interface AuthUser {
   staffId?: string;
 }
 
+interface AuthResult {
+  success: boolean;
+  error?: string;
+}
+
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, role?: string) => Promise<boolean>;
+  login: (email: string, password?: string) => Promise<AuthResult>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -27,7 +32,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
-  login: async () => false,
+  login: async () => ({ success: false }),
   logout: async () => {},
   refreshUser: async () => {},
 });
@@ -62,13 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchCurrentUser();
   }, [pathname]);
 
-  const login = async (email: string, password?: string): Promise<boolean> => {
+  const login = async (email: string, password?: string): Promise<AuthResult> => {
     try {
       setLoading(true);
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: password || 'Password@123' }),
+        body: JSON.stringify({ email: email.trim(), password: (password || 'Password@123').trim() }),
       });
 
       const data = await res.json();
@@ -88,11 +93,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           router.push('/portal/admin');
         }
-        return true;
+        return { success: true };
       }
-      return false;
-    } catch (err) {
-      return false;
+      return { success: false, error: data.error?.message || 'Login failed. Please check credentials.' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network connection error' };
     } finally {
       setLoading(false);
     }

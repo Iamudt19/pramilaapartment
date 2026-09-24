@@ -13,9 +13,19 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const success = await login(email, password);
-    if (!success) {
-      setError('Invalid email or password. Please check your credentials.');
+    const res = await login(email, password);
+    if (!res.success) {
+      setError(res.error || 'Invalid email or password. Please check your credentials.');
+    }
+  };
+
+  const handleFastLogin = async (targetEmail: string) => {
+    setEmail(targetEmail);
+    setPassword('Password@123');
+    setError(null);
+    const res = await login(targetEmail, 'Password@123');
+    if (!res.success) {
+      setError(res.error || 'Fast login failed.');
     }
   };
 
@@ -44,8 +54,8 @@ export default function LoginPage() {
   ];
 
   return (
-    <div className="max-w-md mx-auto py-8">
-      <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl space-y-6">
+    <div className="max-w-md mx-auto py-4 sm:py-8 px-2">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xl space-y-5 sm:space-y-6">
         <div className="text-center">
           <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-900 border border-blue-200 flex items-center justify-center mx-auto shadow-sm mb-3">
             <Building2 className="w-6 h-6" />
@@ -55,9 +65,9 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-2xl text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span className="font-bold">{error}</span>
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-2xl text-xs flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
+            <span className="font-bold leading-relaxed">{error}</span>
           </div>
         )}
 
@@ -95,7 +105,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-900 hover:bg-blue-800 text-white font-black py-3 rounded-xl text-sm shadow-lg shadow-blue-900/25 flex items-center justify-center gap-2 transition-all border border-blue-950"
+            className="w-full bg-blue-900 hover:bg-blue-800 disabled:opacity-50 text-white font-black py-3 rounded-xl text-sm shadow-lg shadow-blue-900/25 flex items-center justify-center gap-2 transition-all border border-blue-950"
           >
             {loading ? 'Authenticating...' : 'Sign In to Portal'} <ArrowRight className="w-4 h-4 text-amber-400" />
           </button>
@@ -104,7 +114,7 @@ export default function LoginPage() {
         {/* 1-Click Role Accounts */}
         <div className="pt-4 border-t border-slate-200">
           <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-500 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> 1-Click Fast Login
+            <Sparkles className="w-3.5 h-3.5 text-amber-500" /> 1-Click Fast Login (Tap to Enter)
           </div>
 
           <div className="space-y-2">
@@ -115,13 +125,11 @@ export default function LoginPage() {
                 <button
                   key={r.email}
                   type="button"
-                  onClick={() => {
-                    setEmail(r.email);
-                    setPassword('Password@123');
-                  }}
-                  className={`w-full text-left p-3 rounded-2xl text-xs flex items-start justify-between border transition-all ${
+                  disabled={loading}
+                  onClick={() => handleFastLogin(r.email)}
+                  className={`w-full text-left p-3 rounded-2xl text-xs flex items-start justify-between border transition-all active:scale-[0.99] ${
                     isSelected
-                      ? 'bg-blue-50 border-blue-300 shadow-sm'
+                      ? 'bg-blue-50 border-blue-300 shadow-sm ring-2 ring-blue-500/20'
                       : 'bg-slate-50 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
@@ -135,7 +143,7 @@ export default function LoginPage() {
                       <p className="text-[10px] text-slate-600 mt-0.5 font-medium">{r.desc}</p>
                     </div>
                   </div>
-                  <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                  <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
                     isSelected ? 'bg-amber-500 text-slate-950 font-black' : 'bg-white text-slate-600 border border-slate-200'
                   }`}>
                     {r.badge}
