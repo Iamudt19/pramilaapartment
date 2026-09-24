@@ -98,6 +98,8 @@ export async function getCurrentSession(req?: NextRequest): Promise<UserSession 
   }
 }
 
+export const getAuthSession = getCurrentSession;
+
 export async function getUserWithDetails(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },

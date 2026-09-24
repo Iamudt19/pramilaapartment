@@ -38,7 +38,7 @@ export function Navbar() {
       {/* Brand with Official Logo */}
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="h-10 px-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-sm group-hover:border-emerald-500 transition-all">
+          <div className="h-10 px-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center shadow-sm group-hover:border-blue-500 transition-all">
             <img
               src="/images/logo.png"
               alt="Pramila Apartment Logo"
@@ -47,15 +47,15 @@ export function Navbar() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-serif-luxury font-extrabold text-base tracking-tight text-slate-900 group-hover:text-emerald-700 transition-colors">
+              <span className="font-serif-luxury font-extrabold text-base tracking-tight text-slate-900 group-hover:text-blue-900 transition-colors">
                 Pramila Apartments
               </span>
-              <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full">
+              <span className="bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-full">
                 DMCH Road
               </span>
             </div>
             <p className="text-[10px] text-slate-500 font-medium flex items-center gap-1">
-              <MapPin className="w-2.5 h-2.5 text-emerald-600" /> Premium 2BHK Residences
+              <MapPin className="w-2.5 h-2.5 text-blue-600" /> Premium 2BHK Residences
             </p>
           </div>
         </Link>
@@ -65,16 +65,16 @@ export function Navbar() {
       <nav className="hidden md:flex items-center gap-6 text-xs font-bold text-slate-600">
         <Link
           href="/"
-          className={`hover:text-emerald-600 transition-colors ${
-            pathname === '/' ? 'text-emerald-700 font-extrabold' : ''
+          className={`hover:text-blue-700 transition-colors ${
+            pathname === '/' ? 'text-blue-800 font-extrabold' : ''
           }`}
         >
           Home & Amenities
         </Link>
-        <a href="/#suites" className="hover:text-emerald-600 transition-colors">
+        <a href="/#suites" className="hover:text-blue-700 transition-colors">
           2BHK Suites
         </a>
-        <a href="/#features" className="hover:text-emerald-600 transition-colors">
+        <a href="/#features" className="hover:text-blue-700 transition-colors">
           Living Benefits
         </a>
         <Link
@@ -85,11 +85,11 @@ export function Navbar() {
               handleOpenTenant();
             }
           }}
-          className={`hover:text-emerald-600 flex items-center gap-1.5 transition-colors ${
-            pathname.startsWith('/portal/tenant') ? 'text-emerald-700 font-extrabold' : ''
+          className={`hover:text-blue-700 flex items-center gap-1.5 transition-colors ${
+            pathname.startsWith('/portal/tenant') ? 'text-blue-800 font-extrabold' : ''
           }`}
         >
-          <Users className="w-3.5 h-3.5 text-emerald-600" /> Resident Portal
+          <Users className="w-3.5 h-3.5 text-blue-600" /> Resident Portal
         </Link>
       </nav>
 
@@ -100,7 +100,7 @@ export function Navbar() {
             <NotificationBell />
 
             <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
-              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-emerald-600/20">
+              <div className="w-8 h-8 rounded-xl bg-blue-800 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-blue-800/20">
                 {user.name?.charAt(0) || 'U'}
               </div>
               <div className="hidden sm:block text-left">
@@ -128,9 +128,9 @@ export function Navbar() {
             </Link>
             <Link
               href="/register"
-              className="px-4 py-2 text-xs font-black text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl shadow-md shadow-emerald-600/20 transition-all flex items-center gap-1 uppercase tracking-wider"
+              className="px-4 py-2 text-xs font-black text-white bg-blue-800 hover:bg-blue-700 rounded-xl shadow-md shadow-blue-900/20 transition-all flex items-center gap-1 uppercase tracking-wider border border-blue-900"
             >
-              Apply Flat <ArrowRight className="w-3 h-3" />
+              Apply Flat <ArrowRight className="w-3 h-3 text-amber-300" />
             </Link>
           </div>
         )}

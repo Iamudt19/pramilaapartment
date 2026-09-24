@@ -18,17 +18,11 @@ export default function AdminPortalLayout({ children }: { children: React.ReactN
     setLoading(true);
 
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: 'admin@pramila.com', password: adminPassword }),
-      });
-      const data = await res.json();
-      if (data.success) {
+      const ok = await login('admin@pramila.com', adminPassword);
+      if (ok) {
         setAdminPassword('');
-        await login('admin@pramila.com');
       } else {
-        setError(data.error?.message || 'Incorrect Admin Password. Please try again.');
+        setError('Incorrect Admin Password. Please enter Password@123 or check admin credentials.');
       }
     } catch (err: any) {
       setError(err.message || 'Authentication error');

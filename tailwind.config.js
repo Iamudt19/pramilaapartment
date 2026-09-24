@@ -15,17 +15,28 @@ module.exports = {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-          50: '#f0fdf4',
-          100: '#dcfce7',
-          500: '#22c55e',
-          600: '#16a34a',
-          700: '#15803d',
+          DEFAULT: "#1e40af", // Royal Sapphire 800
+          foreground: "#ffffff",
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+          950: '#172554',
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "#d97706", // Warm Amber
+          foreground: "#ffffff",
+          50: '#fffbeb',
+          100: '#fef3c7',
+          500: '#f59e0b',
+          600: '#d97706',
+          700: '#b45309',
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -36,20 +47,22 @@ module.exports = {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          DEFAULT: "#d97706",
+          foreground: "#ffffff",
         },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
         brand: {
-          dark: "#0b1329",
-          card: "#132147",
-          border: "#1f346d",
-          accent: "#3b82f6",
+          dark: "#0a1128", // Navy Obsidian
+          card: "#101e42", // Deep Sapphire Slate
+          border: "#1e305e",
+          accent: "#2563eb", // Royal Sapphire Accent
+          sapphire: "#1e3a8a",
+          amber: "#d97706", // Warm Amber Gold
+          gold: "#f59e0b",
           emerald: "#10b981",
-          amber: "#f59e0b",
           rose: "#f43f5e",
         }
       },

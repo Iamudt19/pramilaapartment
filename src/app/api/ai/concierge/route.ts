@@ -20,13 +20,17 @@ export async function POST(req: NextRequest) {
       const tenant = await prisma.tenant.findUnique({
         where: { id: session.tenantId },
         include: {
-          flat: true,
+          tenancies: {
+            where: { status: 'ACTIVE' },
+            include: { flat: true },
+            take: 1,
+          },
           invoices: { where: { status: { in: ['PENDING', 'OVERDUE', 'PARTIALLY_PAID'] } } },
         },
       });
 
       if (tenant) {
-        flatNumber = tenant.flat?.flatNumber;
+        flatNumber = tenant.tenancies?.[0]?.flat?.flatNumber;
         outstandingBalance = tenant.invoices.reduce((sum, inv) => sum + (inv.totalAmount - inv.paidAmount), 0);
       }
     }
