@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Footer } from '@/components/layout/Footer';
 import { EmergencyBanner } from '@/components/layout/EmergencyBanner';
 import { AiConciergeChat } from '@/components/ai/AiConciergeChat';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'Pramila Apartments — Full-Stack Apartment & Rental Management Platform',
@@ -31,6 +32,7 @@ export default function RootLayout({
           <Footer />
           <AiConciergeChat />
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
