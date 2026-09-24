@@ -32,48 +32,48 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-md mx-auto py-8">
-      <div className="glass-card rounded-3xl p-8 border border-slate-700/80 shadow-2xl">
+      <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl">
         <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center mx-auto text-white shadow-lg shadow-emerald-900/30 mb-3">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center mx-auto shadow-sm mb-3">
             <Building2 className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-black text-white tracking-tight">Pramila Apartments</h2>
-          <p className="text-xs text-slate-400 mt-1">Sign in to your authenticated portal</p>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Pramila Apartments</h2>
+          <p className="text-xs text-slate-500 mt-1">Sign in to your authenticated portal</p>
         </div>
 
         {error && (
-          <div className="bg-rose-950/40 border border-rose-500/40 text-rose-300 p-3 rounded-xl text-xs flex items-center gap-2 mb-4">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-2xl text-xs flex items-center gap-2 mb-4">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
             <span>{error}</span>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Email Address</label>
+            <label className="text-xs font-bold text-slate-700 block mb-1">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+              <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition-colors"
                 placeholder="you@pramila.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-slate-300 block mb-1">Password</label>
+            <label className="text-xs font-bold text-slate-700 block mb-1">Password</label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+              <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white transition-colors"
                 placeholder="••••••••••••"
               />
             </div>
@@ -82,16 +82,16 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-extrabold py-3 rounded-xl text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl text-sm shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 transition-all"
           >
             {loading ? 'Authenticating...' : 'Sign In to Portal'} <ArrowRight className="w-4 h-4" />
           </button>
         </form>
 
         {/* Quick Demo Credentials */}
-        <div className="mt-6 pt-5 border-t border-slate-800">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" /> 1-Click Role Accounts (Demo)
+        <div className="mt-6 pt-5 border-t border-slate-200">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500 mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> 1-Click Role Accounts (Demo)
           </div>
 
           <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -103,17 +103,17 @@ export default function LoginPage() {
                   setEmail(r.email);
                   setPassword('Password@123');
                 }}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between border transition-all ${
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-between border transition-all ${
                   email === r.email
-                    ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-300'
-                    : 'bg-slate-950/60 border-slate-800 text-slate-300 hover:bg-slate-800'
+                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900 font-bold'
+                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                 }`}
               >
                 <div>
-                  <span className="font-semibold block">{r.label}</span>
+                  <span className="font-bold block">{r.label}</span>
                   <span className="text-[10px] text-slate-500">{r.email}</span>
                 </div>
-                <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-mono">
+                <span className="text-[10px] bg-white text-slate-600 border border-slate-200 px-2 py-0.5 rounded font-mono font-medium">
                   {r.badge}
                 </span>
               </button>
@@ -121,9 +121,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="mt-6 text-center text-xs text-slate-400">
+        <div className="mt-6 text-center text-xs text-slate-500">
           New resident?{' '}
-          <Link href="/register" className="text-emerald-400 hover:underline font-semibold">
+          <Link href="/register" className="text-emerald-700 hover:underline font-bold">
             Submit Tenant Registration Application
           </Link>
         </div>

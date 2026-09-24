@@ -18,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="antialiased flex flex-col min-h-screen bg-[#080e1e] text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
+    <html lang="en" className="light">
+      <body className="antialiased flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-white">
         <AuthProvider>
           <EmergencyBanner />
           <Navbar />

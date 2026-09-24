@@ -54,16 +54,16 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
       gain.connect(ctx.destination);
 
       if (type === 'success') {
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1); // A5
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.setValueAtTime(880, ctx.currentTime + 0.1);
         gain.gain.setValueAtTime(0.3, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
         osc.start(ctx.currentTime);
         osc.stop(ctx.currentTime + 0.3);
       } else if (type === 'checkin') {
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
-        osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2); // G5
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+        osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(783.99, ctx.currentTime + 0.2);
         gain.gain.setValueAtTime(0.3, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
         osc.start(ctx.currentTime);
@@ -81,7 +81,6 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
     }
   };
 
-  // Start Camera Stream
   const startCamera = async () => {
     setCameraError(null);
     try {
@@ -114,7 +113,6 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
     }
   };
 
-  // Stop Camera Stream
   const stopCamera = () => {
     if (animationFrameId.current) {
       cancelAnimationFrame(animationFrameId.current);
@@ -127,7 +125,6 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
     setCameraActive(false);
   };
 
-  // Real-time Canvas Frame QR Scanner Loop
   const tick = () => {
     if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
       const canvas = canvasRef.current;
@@ -145,7 +142,7 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
 
           if (code && code.data) {
             handleDecodedPayload(code.data);
-            return; // Stop scanning once detected
+            return;
           }
         }
       }
@@ -174,14 +171,13 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
         token = parsed.token;
       }
     } catch {
-      // If pure string token format
+      // String token
     }
 
     setPassCodeInput(token);
     handleVerify(token);
   };
 
-  // Decode from Uploaded Image / Screenshot
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -211,7 +207,6 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
     reader.readAsDataURL(file);
   };
 
-  // API Verification
   const handleVerify = async (codeToVerify?: string) => {
     const code = codeToVerify || passCodeInput;
     if (!code) return;
@@ -243,7 +238,6 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
     }
   };
 
-  // Check-In Execution
   const handleCheckIn = async () => {
     if (!scanResult?.requestId) return;
 
@@ -280,32 +274,32 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/85 backdrop-blur-xl flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-700/80 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-[0_0_60px_rgba(0,0,0,0.8)] relative my-8">
+    <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 overflow-y-auto">
+      <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative my-8">
         {/* Close Button */}
         <button
           onClick={() => {
             stopCamera();
             onClose();
           }}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition-colors"
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/20">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-black shadow-sm">
             <ScanLine className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-black text-white tracking-tight">Security Gate Scanner</h3>
-            <p className="text-xs text-slate-400">Live Camera, QR Image Decode & Token Search</p>
+            <h3 className="text-lg font-black text-slate-900 tracking-tight">Security Gate Scanner</h3>
+            <p className="text-xs text-slate-500">Live Camera, QR Image Decode & Token Search</p>
           </div>
         </div>
 
         {/* Scanner Modes Switcher */}
-        <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-950 rounded-2xl border border-slate-800 mb-5">
+        <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl border border-slate-200 mb-5">
           <button
             onClick={() => {
               setActiveMode('camera');
@@ -314,11 +308,11 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
             }}
             className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
               activeMode === 'camera'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <Camera className="w-3.5 h-3.5" /> Live Camera
+            <Camera className="w-3.5 h-3.5 text-emerald-600" /> Live Camera
           </button>
 
           <button
@@ -330,11 +324,11 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
             }}
             className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
               activeMode === 'upload'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <Upload className="w-3.5 h-3.5" /> Image / Photo
+            <Upload className="w-3.5 h-3.5 text-emerald-600" /> Image / Photo
           </button>
 
           <button
@@ -346,17 +340,17 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
             }}
             className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
               activeMode === 'manual'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-500 hover:text-slate-900'
             }`}
           >
-            <Search className="w-3.5 h-3.5" /> Pass Token
+            <Search className="w-3.5 h-3.5 text-emerald-600" /> Pass Token
           </button>
         </div>
 
         {/* 1. Camera Mode Viewfinder */}
         {activeMode === 'camera' && (
-          <div className="relative bg-black rounded-2xl overflow-hidden border-2 border-emerald-500/40 mb-5 aspect-video flex items-center justify-center shadow-inner">
+          <div className="relative bg-black rounded-2xl overflow-hidden border-2 border-emerald-500/50 mb-5 aspect-video flex items-center justify-center shadow-inner">
             <video
               ref={videoRef}
               className="w-full h-full object-cover"
@@ -368,13 +362,12 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
 
             {/* Target Reticle Overlay */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="w-48 h-48 border-2 border-emerald-400/80 rounded-2xl relative shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-pulse">
+              <div className="w-48 h-48 border-2 border-emerald-400 rounded-2xl relative shadow-[0_0_20px_rgba(16,185,129,0.4)]">
                 <div className="absolute top-0 left-0 w-5 h-5 border-t-4 border-l-4 border-emerald-400 -mt-1 -ml-1"></div>
                 <div className="absolute top-0 right-0 w-5 h-5 border-t-4 border-r-4 border-emerald-400 -mt-1 -mr-1"></div>
                 <div className="absolute bottom-0 left-0 w-5 h-5 border-b-4 border-l-4 border-emerald-400 -mb-1 -ml-1"></div>
                 <div className="absolute bottom-0 right-0 w-5 h-5 border-b-4 border-r-4 border-emerald-400 -mb-1 -mr-1"></div>
 
-                {/* Laser scan line */}
                 <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent absolute top-1/2 -translate-y-1/2 shadow-[0_0_10px_#10b981] animate-bounce"></div>
               </div>
             </div>
@@ -398,7 +391,7 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
         {activeMode === 'upload' && (
           <div
             onClick={() => fileInputRef.current?.click()}
-            className="border-2 border-dashed border-slate-700 hover:border-emerald-500/60 rounded-2xl p-8 text-center bg-slate-950/60 cursor-pointer mb-5 transition-all group"
+            className="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-8 text-center bg-slate-50 cursor-pointer mb-5 transition-all group"
           >
             <input
               ref={fileInputRef}
@@ -407,11 +400,11 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
               className="hidden"
               onChange={handleImageUpload}
             />
-            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+            <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 text-emerald-600 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform shadow-sm">
               <Upload className="w-6 h-6" />
             </div>
-            <h4 className="font-bold text-white text-sm">Select QR Pass Photo or Screenshot</h4>
-            <p className="text-xs text-slate-400 mt-1">Supports WhatsApp images, gallery photos, and PNG/JPEG passes</p>
+            <h4 className="font-bold text-slate-900 text-sm">Select QR Pass Photo or Screenshot</h4>
+            <p className="text-xs text-slate-500 mt-1">Supports WhatsApp images, gallery photos, and PNG/JPEG passes</p>
           </div>
         )}
 
@@ -425,12 +418,12 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleVerify();
             }}
-            className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-500 font-mono focus:outline-none focus:border-emerald-500"
+            className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 font-mono focus:outline-none focus:border-emerald-600 focus:bg-white"
           />
           <button
             onClick={() => handleVerify()}
             disabled={loading || !passCodeInput.trim()}
-            className="bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-black px-5 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-emerald-500/20"
+            className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black px-5 py-2.5 rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20"
           >
             {loading ? 'Verifying...' : 'Verify Pass'}
           </button>
@@ -438,18 +431,18 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
 
         {/* Error Alert Box */}
         {error && (
-          <div className="bg-rose-950/40 border border-rose-500/40 text-rose-300 p-3.5 rounded-2xl text-xs flex items-center gap-2.5 mb-4 animate-in fade-in">
-            <AlertOctagon className="w-5 h-5 shrink-0 text-rose-400" />
-            <span className="font-medium">{error}</span>
+          <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3.5 rounded-2xl text-xs flex items-center gap-2.5 mb-4 animate-in fade-in">
+            <AlertOctagon className="w-5 h-5 shrink-0 text-rose-600" />
+            <span className="font-bold">{error}</span>
           </div>
         )}
 
         {/* Verified Pass Card */}
         {scanResult && (
-          <div className="bg-slate-950 border border-emerald-500/40 rounded-2xl p-5 animate-in slide-in-from-bottom-2 duration-200 shadow-xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="bg-slate-50 border border-emerald-300 rounded-2xl p-5 animate-in slide-in-from-bottom-2 duration-200 shadow-md space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 overflow-hidden flex items-center justify-center font-bold text-emerald-400">
+                <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 overflow-hidden flex items-center justify-center font-bold text-emerald-700 shadow-sm">
                   {scanResult.visitorPhotoUrl ? (
                     <img src={scanResult.visitorPhotoUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -457,41 +450,41 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
                   )}
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-white text-base">{scanResult.visitorName}</h4>
-                  <p className="text-xs text-slate-400">{scanResult.relationship} • {scanResult.visitorPhone}</p>
+                  <h4 className="font-black text-slate-900 text-base">{scanResult.visitorName}</h4>
+                  <p className="text-xs text-slate-500">{scanResult.relationship} • {scanResult.visitorPhone}</p>
                 </div>
               </div>
 
               <span
                 className={`text-xs font-bold px-3 py-1 rounded-full ${
                   scanResult.statusValidity === 'VALID'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    : 'bg-amber-100 text-amber-800 border border-amber-300'
                 }`}
               >
                 {scanResult.statusValidity === 'VALID' ? 'VALID PASS' : scanResult.statusValidity}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/60 p-3 rounded-xl border border-slate-800/80">
+            <div className="grid grid-cols-2 gap-3 text-xs bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold block">Destination Flat</span>
-                <span className="font-black text-emerald-400 text-sm font-mono">Flat {scanResult.flatNumber}</span>
-                <span className="text-slate-400 text-[11px] block">Host: {scanResult.tenantName}</span>
+                <span className="font-black text-emerald-700 text-sm font-mono">Flat {scanResult.flatNumber}</span>
+                <span className="text-slate-500 text-[11px] block">Host: {scanResult.tenantName}</span>
               </div>
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold block">Purpose of Visit</span>
-                <span className="text-slate-200 font-medium">{scanResult.purpose}</span>
+                <span className="text-slate-800 font-semibold">{scanResult.purpose}</span>
               </div>
               {scanResult.vehicleNumber && (
                 <div>
                   <span className="text-slate-500 text-[10px] uppercase font-bold block">Vehicle Plate</span>
-                  <span className="font-mono text-cyan-400 font-bold">{scanResult.vehicleNumber}</span>
+                  <span className="font-mono text-cyan-700 font-bold">{scanResult.vehicleNumber}</span>
                 </div>
               )}
               <div>
                 <span className="text-slate-500 text-[10px] uppercase font-bold block">Validity Window</span>
-                <span className="text-amber-300 font-medium">{formatDateTime(scanResult.validUntil)}</span>
+                <span className="text-amber-800 font-bold">{formatDateTime(scanResult.validUntil)}</span>
               </div>
             </div>
 
@@ -499,17 +492,17 @@ export function QrScannerModal({ isOpen, onClose, onSuccess }: QrScannerModalPro
               <button
                 onClick={handleCheckIn}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3.5 rounded-2xl text-sm shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all transform active:scale-98"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3.5 rounded-2xl text-sm shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all transform active:scale-98"
               >
                 <UserCheck className="w-5 h-5" /> Grant Gate Entry & Check In
               </button>
             ) : scanResult.isCheckedIn ? (
-              <div className="text-center text-xs text-emerald-400 bg-emerald-950/40 p-3 rounded-xl border border-emerald-500/20 font-bold flex items-center justify-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="text-center text-xs text-emerald-800 bg-emerald-100 p-3 rounded-xl border border-emerald-300 font-bold flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-700" />
                 Visitor is already Checked In inside the premises.
               </div>
             ) : (
-              <div className="text-center text-xs text-rose-400 bg-rose-950/40 p-3 rounded-xl border border-rose-500/20 font-bold">
+              <div className="text-center text-xs text-rose-700 bg-rose-100 p-3 rounded-xl border border-rose-300 font-bold">
                 Pass is expired or not valid for entry.
               </div>
             )}

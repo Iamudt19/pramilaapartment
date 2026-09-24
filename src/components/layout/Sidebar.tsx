@@ -98,13 +98,13 @@ export function Sidebar() {
   else if (user.role === 'MAINTENANCE_STAFF') currentNav = maintenanceNav;
 
   return (
-    <aside className="w-64 shrink-0 hidden lg:block border-r border-slate-800 bg-slate-950/70 p-4 min-h-[calc(100vh-4rem)]">
-      <div className="mb-4 px-3 py-2 bg-slate-900/80 rounded-xl border border-slate-800 flex items-center justify-between">
+    <aside className="w-64 shrink-0 hidden lg:block border-r border-slate-200 bg-white/95 p-4 min-h-[calc(100vh-4rem)] shadow-sm">
+      <div className="mb-4 px-3.5 py-2.5 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between shadow-inner">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Portal Mode</div>
-          <div className="text-xs font-extrabold text-emerald-400">{user.role.replace('_', ' ')}</div>
+          <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Portal Mode</div>
+          <div className="text-xs font-black text-emerald-700">{user.role.replace('_', ' ')}</div>
         </div>
-        <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></div>
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
       </div>
 
       <nav className="space-y-1">
@@ -115,13 +115,13 @@ export function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 isActive
-                  ? 'bg-gradient-to-r from-emerald-600/90 to-teal-700 text-white shadow-md shadow-emerald-950 border border-emerald-500/30'
-                  : 'text-slate-400 hover:text-slate-100 hover:bg-slate-900/60'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20 font-extrabold'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
               <span>{item.label}</span>
             </Link>
           );
