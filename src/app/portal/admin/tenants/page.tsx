@@ -3,24 +3,25 @@
 import React, { useEffect, useState } from 'react';
 import {
   UserCheck,
-  Plus,
   CheckCircle2,
   XCircle,
   Search,
   Shield,
-  ArrowRight,
   Eye,
   FileText,
   FolderLock,
-  ExternalLink,
-  ShieldAlert,
   User,
   Phone,
   Mail,
   MapPin,
   Building,
-  Calendar,
-  Sparkles,
+  Home,
+  AlertTriangle,
+  Check,
+  X,
+  RefreshCw,
+  ArrowRight,
+  Edit3,
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { DocumentViewerModal } from '@/components/shared/DocumentViewerModal';
@@ -31,6 +32,16 @@ export default function TenantsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
+
+  // Inline row action state
+  const [inlineFlat, setInlineFlat] = useState<Record<string, string>>({});
+  const [inlineAction, setInlineAction] = useState<Record<string, boolean>>({});
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  const showToast = (msg: string, ok = true) => {
+    setToast({ msg, ok });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   // Review Modal state
   const [selectedTenant, setSelectedTenant] = useState<any>(null);
@@ -53,16 +64,28 @@ export default function TenantsPage() {
       ]);
       if (tenRes.ok) {
         const data = await tenRes.json();
-        setTenants(data.tenants || []);
-        // Update selectedTenant if modal is open
+        const list = data.tenants || [];
+        setTenants(list);
+        // Seed inline flat selectors
+        setInlineFlat((prev) => {
+          const next = { ...prev };
+          list.forEach((t: any) => { if (!next[t.id]) next[t.id] = ''; });
+          return next;
+        });
         if (selectedTenant) {
-          const updated = (data.tenants || []).find((t: any) => t.id === selectedTenant.id);
+          const updated = list.find((t: any) => t.id === selectedTenant.id);
           if (updated) setSelectedTenant(updated);
         }
       }
       if (flatRes.ok) {
         const fData = (await flatRes.json()).flats || [];
         setFlats(fData);
+        // Seed first vacant flat into inline selectors
+        setInlineFlat((prev) => {
+          const next = { ...prev };
+          Object.keys(next).forEach((tid) => { if (!next[tid] && fData[0]) next[tid] = fData[0].id; });
+          return next;
+        });
         if (fData.length > 0 && !assignFlatId) {
           setAssignFlatId(fData[0].id);
         }
@@ -90,6 +113,7 @@ export default function TenantsPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        showToast(`${selectedTenant.fullName} approved & flat assigned!`);
         setShowReviewModal(false);
         await fetchData();
       } else {
@@ -115,6 +139,7 @@ export default function TenantsPage() {
       });
       const data = await res.json();
       if (res.ok && data.success) {
+        showToast(`${selectedTenant.fullName} application rejected.`, false);
         setShowReviewModal(false);
         await fetchData();
       } else {
@@ -126,6 +151,49 @@ export default function TenantsPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Inline row: approve directly from table
+  const inlineApprove = async (tenant: any) => {
+    const flatId = inlineFlat[tenant.id];
+    if (!flatId) { showToast('Please select a vacant flat first', false); return; }
+    setInlineAction((p) => ({ ...p, [tenant.id]: true }));
+    try {
+      const res = await fetch(`/api/tenants/${tenant.id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ flatId }),
+      });
+      const d = await res.json();
+      if (res.ok && d.success) {
+        showToast(`${tenant.fullName} approved and flat assigned!`);
+        await fetchData();
+      } else {
+        showToast(d.error?.message || 'Failed to approve', false);
+      }
+    } catch (e: any) { showToast(e.message, false); }
+    finally { setInlineAction((p) => ({ ...p, [tenant.id]: false })); }
+  };
+
+  // Inline row: reject directly from table
+  const inlineReject = async (tenant: any) => {
+    if (!confirm(`Reject application from ${tenant.fullName}? The applicant will be notified.`)) return;
+    setInlineAction((p) => ({ ...p, [tenant.id]: true }));
+    try {
+      const res = await fetch(`/api/tenants/${tenant.id}/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rejectionReason: 'Application criteria not met' }),
+      });
+      const d = await res.json();
+      if (res.ok && d.success) {
+        showToast(`${tenant.fullName} application rejected and logged.`);
+        await fetchData();
+      } else {
+        showToast(d.error?.message || 'Failed to reject', false);
+      }
+    } catch (e: any) { showToast(e.message, false); }
+    finally { setInlineAction((p) => ({ ...p, [tenant.id]: false })); }
   };
 
   const handleVerifyDocument = async (docId: string, status: 'VERIFIED' | 'REJECTED') => {
@@ -148,6 +216,15 @@ export default function TenantsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Global Toast */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-[9999] px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-bold flex items-center gap-2.5 animate-in slide-in-from-right border ${
+          toast.ok ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-rose-600 text-white border-rose-500'
+        }`}>
+          {toast.ok ? <CheckCircle2 className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+          {toast.msg}
+        </div>
+      )}
       {/* Top Banner */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
@@ -289,26 +366,56 @@ export default function TenantsPage() {
                           {t.status}
                         </span>
                       </td>
-                      <td className="py-3.5 px-4 text-right">
+                      <td className="py-2.5 px-4">
                         {t.status === 'PENDING' ? (
-                          <button
-                            onClick={() => {
-                              setSelectedTenant(t);
-                              setShowReviewModal(true);
-                            }}
-                            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-emerald-600/20 active:scale-95"
-                          >
-                            Review & Assign
-                          </button>
+                          <div className="flex flex-col gap-1.5" style={{ minWidth: 280 }}>
+                            <div className="flex items-center gap-1.5">
+                              <Home className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                              <select
+                                value={inlineFlat[t.id] || ''}
+                                onChange={(e) => setInlineFlat((p) => ({ ...p, [t.id]: e.target.value }))}
+                                disabled={inlineAction[t.id]}
+                                className="flex-1 bg-white border border-slate-300 rounded-lg px-2 py-1.5 text-xs text-slate-900 font-bold focus:outline-none focus:border-blue-600"
+                              >
+                                <option value="">-- Select Flat --</option>
+                                {flats.map((f) => (
+                                  <option key={f.id} value={f.id}>
+                                    Flat {f.flatNumber} ({f.flatType})
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                disabled={!inlineFlat[t.id] || inlineAction[t.id]}
+                                onClick={() => inlineApprove(t)}
+                                className="flex-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-black rounded-lg text-xs shadow-sm transition-all flex items-center justify-center gap-1 active:scale-95"
+                              >
+                                {inlineAction[t.id] ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                                Approve
+                              </button>
+                              <button
+                                disabled={inlineAction[t.id]}
+                                onClick={() => inlineReject(t)}
+                                className="flex-1 px-3 py-1.5 bg-rose-50 hover:bg-rose-100 disabled:opacity-40 text-rose-700 font-bold border border-rose-300 rounded-lg text-xs transition-all flex items-center justify-center gap-1 active:scale-95"
+                              >
+                                <X className="w-3.5 h-3.5" /> Reject
+                              </button>
+                              <button
+                                onClick={() => { setSelectedTenant(t); setAssignFlatId(inlineFlat[t.id] || flats[0]?.id || ''); setShowReviewModal(true); }}
+                                className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 rounded-lg text-xs font-bold transition"
+                                title="Open Full Profile"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
                         ) : (
                           <button
-                            onClick={() => {
-                              setSelectedTenant(t);
-                              setShowReviewModal(true);
-                            }}
+                            onClick={() => { setSelectedTenant(t); setShowReviewModal(true); }}
                             className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-blue-700 font-bold rounded-xl text-xs transition border border-slate-200 inline-flex items-center gap-1"
                           >
-                            <Eye className="w-3.5 h-3.5" /> View Profile & Docs
+                            <Eye className="w-3.5 h-3.5" /> View Profile &amp; Docs
                           </button>
                         )}
                       </td>
