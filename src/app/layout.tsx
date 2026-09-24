@@ -6,6 +6,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Footer } from '@/components/layout/Footer';
 import { EmergencyBanner } from '@/components/layout/EmergencyBanner';
 import { AiConciergeChat } from '@/components/ai/AiConciergeChat';
+import { Analytics } from '@vercel/analytics/next';
 
 export const metadata: Metadata = {
   title: 'Pramila Apartments — Full-Stack Apartment & Rental Management Platform',
@@ -20,7 +21,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="light">
-      <body className="antialiased flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-emerald-500 selection:text-white">
+      <body className="antialiased flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-blue-800 selection:text-amber-300">
         <AuthProvider>
           <EmergencyBanner />
           <Navbar />
@@ -30,6 +31,7 @@ export default function RootLayout({
           </div>
           <Footer />
           <AiConciergeChat />
+          <Analytics />
         </AuthProvider>
       </body>
     </html>
