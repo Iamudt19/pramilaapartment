@@ -53,23 +53,27 @@ export default function AdminBillsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header Banner */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Billing & Invoices Engine</h1>
-          <p className="text-xs text-slate-400 mt-1">Generate recurring monthly rent, electricity unit charges, and track arrears</p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold mb-2 shadow-sm">
+            <Receipt className="w-3.5 h-3.5 text-blue-600" /> Automated Utility & Rent Billing
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Billing & Invoices Engine</h1>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">Generate recurring monthly rent, electricity unit charges, and track arrears</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setShowAiMeterScanner(true)}
-            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-extrabold rounded-xl text-xs flex items-center gap-2 border border-amber-500/40 shadow-md transition-all"
+            className="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-extrabold rounded-xl text-xs flex items-center gap-2 border border-amber-300 shadow-sm transition-all"
           >
-            <Sparkles className="w-4 h-4 text-amber-400" /> Scan Sub-Meter with AI
+            <Sparkles className="w-4 h-4 text-amber-600" /> Scan Sub-Meter with AI
           </button>
           <button
             onClick={handleGenerateMonthlyBatch}
             disabled={generating}
-            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 disabled:opacity-50 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+            className="px-4 py-2.5 bg-blue-700 hover:bg-blue-600 disabled:opacity-50 text-white font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-blue-700/20 transition-all"
           >
             <Zap className="w-4 h-4" /> {generating ? 'Processing Invoices...' : 'Run Scheduled Monthly Billing Cycle'}
           </button>
@@ -86,8 +90,8 @@ export default function AdminBillsPage() {
       />
 
       {batchMsg && (
-        <div className="bg-emerald-950/40 border border-emerald-500/40 p-3.5 rounded-2xl text-xs text-emerald-300 flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+        <div className="bg-emerald-50 border border-emerald-300 p-4 rounded-2xl text-xs text-emerald-800 font-bold flex items-center gap-2 shadow-sm">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{batchMsg}</span>
         </div>
       )}
@@ -97,7 +101,7 @@ export default function AdminBillsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+          className="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-800 font-medium focus:outline-none focus:border-blue-600 shadow-sm w-full sm:w-64"
         >
           <option value="">All Invoice Statuses</option>
           <option value="PENDING">Pending (Unpaid)</option>
@@ -108,70 +112,78 @@ export default function AdminBillsPage() {
       </div>
 
       {/* Invoices Table */}
-      <div className="glass-card rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-            <tr>
-              <th className="py-3 px-4">Invoice No</th>
-              <th className="py-3 px-4">Flat & Resident</th>
-              <th className="py-3 px-4">Billing Period</th>
-              <th className="py-3 px-4">Due Date</th>
-              <th className="py-3 px-4">Total Amount</th>
-              <th className="py-3 px-4">Paid Amount</th>
-              <th className="py-3 px-4">Balance</th>
-              <th className="py-3 px-4">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/60">
-            {invoices.length === 0 ? (
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-lg">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-900 text-slate-200 uppercase text-[10px] tracking-wider border-b border-slate-800">
               <tr>
-                <td colSpan={8} className="py-8 text-center text-slate-500">
-                  No invoices recorded yet. Run a monthly billing cycle above.
-                </td>
+                <th className="py-3.5 px-4 font-extrabold">Invoice No</th>
+                <th className="py-3.5 px-4 font-extrabold">Flat & Resident</th>
+                <th className="py-3.5 px-4 font-extrabold">Billing Period</th>
+                <th className="py-3.5 px-4 font-extrabold">Due Date</th>
+                <th className="py-3.5 px-4 font-extrabold">Total Amount</th>
+                <th className="py-3.5 px-4 font-extrabold">Paid Amount</th>
+                <th className="py-3.5 px-4 font-extrabold">Balance</th>
+                <th className="py-3.5 px-4 font-extrabold">Status</th>
               </tr>
-            ) : (
-              invoices.map((inv) => (
-                <tr key={inv.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="py-3 px-4 font-mono font-bold text-emerald-400">
-                    {inv.invoiceNumber}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="font-mono font-bold text-white">Flat {inv.flat?.flatNumber}</span>
-                    <span className="text-[10px] text-slate-400 block">{inv.tenant?.fullName}</span>
-                  </td>
-                  <td className="py-3 px-4 text-slate-300 font-medium">
-                    {inv.billingPeriod}
-                  </td>
-                  <td className="py-3 px-4 text-slate-300 font-mono text-[11px]">
-                    {formatDate(inv.dueDate)}
-                  </td>
-                  <td className="py-3 px-4 font-extrabold text-white">
-                    {formatCurrency(inv.totalAmount)}
-                  </td>
-                  <td className="py-3 px-4 font-semibold text-emerald-400">
-                    {formatCurrency(inv.paidAmount)}
-                  </td>
-                  <td className="py-3 px-4 font-black text-rose-400">
-                    {formatCurrency(inv.balanceAmount)}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
-                        inv.status === 'PAID'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : inv.status === 'PARTIALLY_PAID'
-                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold'
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500 font-semibold">
+                    Loading billing invoices...
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500 font-semibold">
+                    No invoices recorded yet. Run a monthly billing cycle above.
+                  </td>
+                </tr>
+              ) : (
+                invoices.map((inv) => (
+                  <tr key={inv.id} className="hover:bg-blue-50/40 transition-colors">
+                    <td className="py-3.5 px-4 font-mono font-bold text-blue-800">
+                      {inv.invoiceNumber}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="font-mono font-bold text-slate-900">Flat {inv.flat?.flatNumber}</span>
+                      <span className="text-[11px] text-slate-500 block font-medium">{inv.tenant?.fullName}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-700 font-medium">
+                      {inv.billingPeriod}
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600 font-mono text-[11px]">
+                      {formatDate(inv.dueDate)}
+                    </td>
+                    <td className="py-3.5 px-4 font-extrabold text-slate-900">
+                      {formatCurrency(inv.totalAmount)}
+                    </td>
+                    <td className="py-3.5 px-4 font-semibold text-emerald-700">
+                      {formatCurrency(inv.paidAmount)}
+                    </td>
+                    <td className="py-3.5 px-4 font-black text-rose-700">
+                      {formatCurrency(inv.balanceAmount)}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full inline-block ${
+                          inv.status === 'PAID'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : inv.status === 'PARTIALLY_PAID'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300 font-black'
+                        }`}
+                      >
+                        {inv.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

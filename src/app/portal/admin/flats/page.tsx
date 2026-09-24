@@ -302,9 +302,27 @@ export default function FlatsPage() {
                     </td>
                     <td className="py-3.5 px-4">
                       {activeTenant ? (
-                        <div>
-                          <span className="font-bold text-slate-900 block">{activeTenant.fullName}</span>
-                          <span className="text-[10px] text-slate-500">{activeTenant.phone}</span>
+                        <div className="flex items-center gap-2.5">
+                          {activeTenant.user?.avatarUrl ? (
+                            <img
+                              src={activeTenant.user.avatarUrl}
+                              alt={activeTenant.fullName}
+                              className="w-7 h-7 rounded-full object-cover border border-slate-200 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-800 font-black text-[10px] flex items-center justify-center border border-blue-200 shrink-0">
+                              {activeTenant.fullName
+                                .split(' ')
+                                .map((n: string) => n[0])
+                                .slice(0, 2)
+                                .join('')
+                                .toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-bold text-slate-900 block leading-tight">{activeTenant.fullName}</span>
+                            <span className="text-[10px] text-slate-500">{activeTenant.phone}</span>
+                          </div>
                         </div>
                       ) : (
                         <span className="text-slate-400 text-xs italic">— No Active Tenant —</span>

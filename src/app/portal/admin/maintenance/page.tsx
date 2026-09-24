@@ -60,118 +60,124 @@ export default function AdminMaintenancePage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Header Banner */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Maintenance Work Orders & Dispatch</h1>
-          <p className="text-xs text-slate-400 mt-1">Assign technicians, track repairs, log material/labor expenses, and resolve tickets</p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold mb-2 shadow-sm">
+            <Wrench className="w-3.5 h-3.5 text-blue-600" /> Facilities & Ticket Resolution
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Maintenance Work Orders & Dispatch</h1>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">Assign technicians, track repairs, log material/labor expenses, and resolve tickets</p>
         </div>
       </div>
 
       {/* Requests Table */}
-      <div className="glass-card rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-            <tr>
-              <th className="py-3 px-4">Ticket No</th>
-              <th className="py-3 px-4">Flat & Resident</th>
-              <th className="py-3 px-4">Category & Title</th>
-              <th className="py-3 px-4">Assigned Technician</th>
-              <th className="py-3 px-4">Expenses (Labor / Material)</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/60">
-            {requests.length === 0 ? (
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-lg">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-900 text-slate-200 uppercase text-[10px] tracking-wider border-b border-slate-800">
               <tr>
-                <td colSpan={7} className="py-8 text-center text-slate-500">
-                  No maintenance tickets in queue.
-                </td>
+                <th className="py-3.5 px-4 font-extrabold">Ticket No</th>
+                <th className="py-3.5 px-4 font-extrabold">Flat & Resident</th>
+                <th className="py-3.5 px-4 font-extrabold">Category & Title</th>
+                <th className="py-3.5 px-4 font-extrabold">Assigned Technician</th>
+                <th className="py-3.5 px-4 font-extrabold">Expenses (Labor / Material)</th>
+                <th className="py-3.5 px-4 font-extrabold">Status</th>
+                <th className="py-3.5 px-4 text-right font-extrabold">Action</th>
               </tr>
-            ) : (
-              requests.map((req) => {
-                const technician = req.assignments?.[0]?.staff;
-                return (
-                  <tr key={req.id} className="hover:bg-slate-900/40 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-emerald-400">
-                      {req.ticketNumber}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-bold text-white">Flat {req.flat?.flatNumber}</span>
-                      <span className="text-[10px] text-slate-400 block">{req.tenant?.fullName}</span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className="font-semibold text-white block">{req.title}</span>
-                      <span className="text-[10px] text-slate-400 uppercase font-bold text-emerald-400">
-                        {req.category}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-300">
-                      {technician ? (
-                        <div>
-                          <span className="font-semibold text-white">{technician.fullName}</span>
-                          <span className="text-[10px] text-slate-400 block">{technician.phone}</span>
-                        </div>
-                      ) : (
-                        <span className="text-amber-400 italic">— Unassigned —</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-slate-300">
-                      <div>Total: <strong className="text-emerald-400">{formatCurrency(req.totalCost)}</strong></div>
-                      <div className="text-[10px] text-slate-500">L: ₹{req.laborCost} • M: ₹{req.materialCost}</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          req.status === 'RESOLVED' || req.status === 'CLOSED'
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : req.status === 'IN_PROGRESS'
-                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                        }`}
-                      >
-                        {req.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedTicket(req);
-                          setAssignStaffId(technician?.id || '');
-                          setStatusVal(req.status);
-                          setLaborCost(req.laborCost || 0);
-                          setMaterialCost(req.materialCost || 0);
-                          setResolutionNotes(req.resolutionNotes || '');
-                          setShowAssignModal(true);
-                        }}
-                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg text-xs border border-slate-700 transition-all"
-                      >
-                        Manage & Costs →
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {requests.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-500 font-semibold">
+                    No maintenance tickets in queue.
+                  </td>
+                </tr>
+              ) : (
+                requests.map((req) => {
+                  const technician = req.assignments?.[0]?.staff;
+                  return (
+                    <tr key={req.id} className="hover:bg-blue-50/40 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-blue-800">
+                        {req.ticketNumber}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="font-bold text-slate-900">Flat {req.flat?.flatNumber}</span>
+                        <span className="text-[11px] text-slate-500 block font-medium">{req.tenant?.fullName}</span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className="font-semibold text-slate-900 block">{req.title}</span>
+                        <span className="text-[10px] uppercase font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 inline-block mt-0.5">
+                          {req.category}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-700">
+                        {technician ? (
+                          <div>
+                            <span className="font-bold text-slate-900">{technician.fullName}</span>
+                            <span className="text-[11px] text-slate-500 block font-medium">{technician.phone}</span>
+                          </div>
+                        ) : (
+                          <span className="text-amber-700 italic font-semibold">— Unassigned —</span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 font-mono text-slate-700">
+                        <div>Total: <strong className="text-emerald-700">{formatCurrency(req.totalCost)}</strong></div>
+                        <div className="text-[10px] text-slate-500">L: ₹{req.laborCost} • M: ₹{req.materialCost}</div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full inline-block ${
+                            req.status === 'RESOLVED' || req.status === 'CLOSED'
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : req.status === 'IN_PROGRESS'
+                              ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                              : 'bg-amber-100 text-amber-800 border border-amber-300 font-black'
+                          }`}
+                        >
+                          {req.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          onClick={() => {
+                            setSelectedTicket(req);
+                            setAssignStaffId(technician?.id || '');
+                            setStatusVal(req.status);
+                            setLaborCost(req.laborCost || 0);
+                            setMaterialCost(req.materialCost || 0);
+                            setResolutionNotes(req.resolutionNotes || '');
+                            setShowAssignModal(true);
+                          }}
+                          className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold rounded-xl text-xs border border-blue-200 transition-all"
+                        >
+                          Manage & Costs →
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Assign & Update Modal */}
       {showAssignModal && selectedTicket && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-1">Manage Work Order #{selectedTicket.ticketNumber}</h3>
-            <p className="text-xs text-slate-400 mb-4">"{selectedTicket.title}" — Flat {selectedTicket.flat?.flatNumber}</p>
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative">
+            <h3 className="text-lg font-black text-slate-900 mb-1">Manage Work Order #{selectedTicket.ticketNumber}</h3>
+            <p className="text-xs text-slate-500 mb-4">"{selectedTicket.title}" — Flat {selectedTicket.flat?.flatNumber}</p>
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Assign Technician / Staff</label>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Assign Technician / Staff</label>
                 <select
                   value={assignStaffId}
                   onChange={(e) => setAssignStaffId(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
                 >
                   <option value="">Unassigned</option>
                   {staffList.map((s) => (
@@ -183,11 +189,11 @@ export default function AdminMaintenancePage() {
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Work Order Status</label>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Work Order Status</label>
                 <select
                   value={statusVal}
                   onChange={(e) => setStatusVal(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
                 >
                   <option value="ASSIGNED">ASSIGNED</option>
                   <option value="IN_PROGRESS">IN PROGRESS</option>
@@ -199,48 +205,48 @@ export default function AdminMaintenancePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Labor Cost (₹)</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Labor Cost (₹)</label>
                   <input
                     type="number"
                     value={laborCost}
                     onChange={(e) => setLaborCost(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-300 block mb-1">Material Cost (₹)</label>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Material Cost (₹)</label>
                   <input
                     type="number"
                     value={materialCost}
                     onChange={(e) => setMaterialCost(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1">Technician Resolution Notes</label>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Technician Resolution Notes</label>
                 <textarea
                   rows={2}
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-blue-600 focus:bg-white"
                   placeholder="Details of repair or parts replaced..."
                 />
               </div>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowAssignModal(false)}
-                  className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl text-xs font-semibold"
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleUpdateTicket}
-                  className="flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20"
+                  className="flex-1 bg-blue-700 hover:bg-blue-600 text-white py-3 rounded-xl text-xs font-black shadow-lg shadow-blue-700/20 transition-all"
                 >
                   Save Changes
                 </button>

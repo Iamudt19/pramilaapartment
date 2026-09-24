@@ -87,11 +87,15 @@ export default function AdminVisitorsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      {/* Top Banner */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Visitor Management & Passes</h1>
-          <p className="text-xs text-slate-400 mt-1">Review requests, generate cryptographic QR passes, and audit gate entries</p>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold mb-2 shadow-sm">
+            <QrCode className="w-3.5 h-3.5 text-blue-600" /> Gate Clearance & Pass Registry
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Visitor Management & Passes</h1>
+          <p className="text-xs sm:text-sm text-slate-600 mt-1">Review requests, generate cryptographic QR passes, and audit gate entries</p>
         </div>
       </div>
 
@@ -101,19 +105,19 @@ export default function AdminVisitorsPage() {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
             type="text"
             placeholder="Search visitor name, phone, flat..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+            className="w-full bg-white border border-slate-300 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 shadow-sm"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+          className="bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-800 font-medium focus:outline-none focus:border-blue-600 shadow-sm"
         >
           <option value="">All Pass Statuses</option>
           <option value="PENDING">Pending Review</option>
@@ -128,127 +132,129 @@ export default function AdminVisitorsPage() {
         <div
           className={`p-4 rounded-2xl text-xs font-semibold flex items-center justify-between border ${
             feedback.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-rose-50 border-rose-200 text-rose-800'
           }`}
         >
           <div className="flex items-center gap-2">
             {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
             ) : (
-              <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
             )}
             <span>{feedback.message}</span>
           </div>
-          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white text-xs">
+          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-slate-700 text-xs">
             ✕
           </button>
         </div>
       )}
 
       {/* Visitors List */}
-      <div className="glass-card rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
-            <tr>
-              <th className="py-3 px-4">Visitor</th>
-              <th className="py-3 px-4">Destination</th>
-              <th className="py-3 px-4">Purpose & Relationship</th>
-              <th className="py-3 px-4">Expected Window</th>
-              <th className="py-3 px-4">Pass Code</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800/60">
-            {visitors.length === 0 ? (
+      <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-lg">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-slate-900 text-slate-200 uppercase text-[10px] tracking-wider border-b border-slate-800">
               <tr>
-                <td colSpan={7} className="py-8 text-center text-slate-500">
-                  No visitor requests found.
-                </td>
+                <th className="py-3.5 px-4 font-extrabold">Visitor</th>
+                <th className="py-3.5 px-4 font-extrabold">Destination</th>
+                <th className="py-3.5 px-4 font-extrabold">Purpose & Relationship</th>
+                <th className="py-3.5 px-4 font-extrabold">Expected Window</th>
+                <th className="py-3.5 px-4 font-extrabold">Pass Code</th>
+                <th className="py-3.5 px-4 font-extrabold">Status</th>
+                <th className="py-3.5 px-4 text-right font-extrabold">Action</th>
               </tr>
-            ) : (
-              visitors.map((v) => (
-                <tr key={v.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="py-3 px-4">
-                    <div className="font-bold text-white">{v.visitorName}</div>
-                    <div className="text-[10px] text-slate-400">{v.visitorPhone}</div>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="font-mono font-bold text-emerald-400 text-xs">
-                      Flat {v.flat?.flatNumber}
-                    </span>
-                    <span className="text-[10px] text-slate-500 block">Host: {v.tenant?.fullName}</span>
-                  </td>
-                  <td className="py-3 px-4 text-slate-300">
-                    <span className="font-medium text-white">{v.purpose}</span>
-                    <span className="text-[10px] text-slate-400 block">{v.relationship}</span>
-                  </td>
-                  <td className="py-3 px-4 text-slate-300 text-[11px]">
-                    <div>{formatDateTime(v.expectedArrival)}</div>
-                    <div className="text-[10px] text-slate-500">Duration: {v.durationHours} hrs</div>
-                  </td>
-                  <td className="py-3 px-4 font-mono font-bold text-emerald-400">
-                    {v.pass?.passCode ? (
-                      <button
-                        onClick={() => setSelectedPass(v)}
-                        className="underline hover:text-emerald-300 flex items-center gap-1"
-                      >
-                        <QrCode className="w-3.5 h-3.5" /> {v.pass.passCode}
-                      </button>
-                    ) : (
-                      <span className="text-slate-500 italic">— Pending —</span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4">
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        v.status === 'APPROVED'
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                          : v.status === 'CHECKED_IN'
-                          ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold'
-                          : v.status === 'PENDING'
-                          ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
-                          : 'bg-slate-800 text-slate-400'
-                      }`}
-                    >
-                      {v.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    {v.status === 'PENDING' ? (
-                      <div className="flex justify-end gap-1.5">
-                        <button
-                          onClick={() => handleApprove(v.id)}
-                          disabled={Boolean(actionLoading[v.id])}
-                          className="px-2.5 py-1 bg-emerald-500 disabled:opacity-50 text-slate-950 font-bold rounded-lg text-[11px] hover:bg-emerald-400 shadow-sm transition-all"
-                        >
-                          {actionLoading[v.id] === 'approving' ? 'Approving...' : 'Approve Pass'}
-                        </button>
-                        <button
-                          onClick={() => handleReject(v.id)}
-                          disabled={Boolean(actionLoading[v.id])}
-                          className="px-2.5 py-1 bg-rose-950 disabled:opacity-50 text-rose-300 border border-rose-800 rounded-lg text-[11px] hover:bg-rose-900 transition-all"
-                        >
-                          {actionLoading[v.id] === 'rejecting' ? 'Declining...' : 'Decline'}
-                        </button>
-                      </div>
-                    ) : v.pass ? (
-                      <button
-                        onClick={() => setSelectedPass(v)}
-                        className="text-xs text-emerald-400 hover:underline"
-                      >
-                        View Pass Card →
-                      </button>
-                    ) : (
-                      <span className="text-slate-500 text-xs">—</span>
-                    )}
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {visitors.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-slate-500 font-semibold">
+                    No visitor requests found.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              ) : (
+                visitors.map((v) => (
+                  <tr key={v.id} className="hover:bg-blue-50/40 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="font-bold text-slate-900">{v.visitorName}</div>
+                      <div className="text-[11px] text-slate-500">{v.visitorPhone}</div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-xs">
+                        Flat {v.flat?.flatNumber}
+                      </span>
+                      <span className="text-[11px] text-slate-600 block mt-0.5 font-medium">Host: {v.tenant?.fullName}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-700">
+                      <span className="font-semibold text-slate-900">{v.purpose}</span>
+                      <span className="text-[11px] text-slate-500 block">{v.relationship}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-700 text-[11px]">
+                      <div className="font-medium text-slate-900">{formatDateTime(v.expectedArrival)}</div>
+                      <div className="text-[10px] text-slate-500">Duration: {v.durationHours} hrs</div>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono font-bold">
+                      {v.pass?.passCode ? (
+                        <button
+                          onClick={() => setSelectedPass(v)}
+                          className="text-blue-800 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg border border-blue-200 flex items-center gap-1 transition-all"
+                        >
+                          <QrCode className="w-3.5 h-3.5 text-blue-700" /> {v.pass.passCode}
+                        </button>
+                      ) : (
+                        <span className="text-slate-400 italic">— Pending —</span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full inline-block ${
+                          v.status === 'APPROVED'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : v.status === 'CHECKED_IN'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse font-black'
+                            : v.status === 'PENDING'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                            : 'bg-slate-100 text-slate-600 border border-slate-200'
+                        }`}
+                      >
+                        {v.status}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      {v.status === 'PENDING' ? (
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            onClick={() => handleApprove(v.id)}
+                            disabled={Boolean(actionLoading[v.id])}
+                            className="px-3 py-1.5 bg-emerald-600 disabled:opacity-50 text-white font-bold rounded-xl text-xs hover:bg-emerald-500 shadow-md shadow-emerald-600/20 transition-all"
+                          >
+                            {actionLoading[v.id] === 'approving' ? 'Approving...' : 'Approve Pass'}
+                          </button>
+                          <button
+                            onClick={() => handleReject(v.id)}
+                            disabled={Boolean(actionLoading[v.id])}
+                            className="px-3 py-1.5 bg-rose-50 disabled:opacity-50 text-rose-700 border border-rose-300 rounded-xl text-xs hover:bg-rose-100 transition-all font-semibold"
+                          >
+                            {actionLoading[v.id] === 'rejecting' ? 'Declining...' : 'Decline'}
+                          </button>
+                        </div>
+                      ) : v.pass ? (
+                        <button
+                          onClick={() => setSelectedPass(v)}
+                          className="text-xs text-blue-700 font-bold hover:underline"
+                        >
+                          View Pass Card →
+                        </button>
+                      ) : (
+                        <span className="text-slate-400 text-xs">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* QR Pass Card Preview Modal */}

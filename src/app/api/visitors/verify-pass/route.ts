@@ -100,10 +100,10 @@ export async function POST(req: NextRequest) {
         relationship: reqData.relationship,
         purpose: reqData.purpose,
         vehicleNumber: reqData.vehicleNumber,
-        flatNumber: reqData.flat.flatNumber,
-        buildingName: reqData.flat.building.name,
-        tenantName: reqData.tenant.fullName,
-        tenantPhone: reqData.tenant.phone,
+        flatNumber: reqData.flat?.flatNumber || 'N/A',
+        buildingName: reqData.flat?.building?.name || 'Main Tower',
+        tenantName: reqData.tenant?.fullName || 'Resident',
+        tenantPhone: reqData.tenant?.phone || '',
         status: reqData.status,
         statusValidity,
         statusMessage,
@@ -117,6 +117,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err: any) {
+    console.error('Verify pass error:', err);
     return NextResponse.json({ success: false, error: { message: err.message } }, { status: 500 });
   }
 }

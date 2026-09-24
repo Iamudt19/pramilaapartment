@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
     const entry = await prisma.visitorEntry.create({
       data: {
         visitorRequestId: request.id,
-        securityGuardId: auth.session.staffId || auth.session.id,
-        securityGuardName: auth.session.name,
+        securityGuardId: auth.session?.staffId || auth.session?.id || 'GATE_GUARD_1',
+        securityGuardName: auth.session?.name || 'Security Officer',
         vehicleNumber: vehicleNumber || request.vehicleNumber,
         photoUrl,
         gateNumber: gateNumber || 'Main Gate 1',
@@ -60,25 +60,28 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. Notify Tenant that their visitor has arrived and checked in
-    await sendNotification({
-      userId: request.tenant.userId,
-      title: 'Visitor Arrived at Gate',
-      message: `${request.visitorName} has been verified and entered via ${gateNumber || 'Main Gate 1'}.`,
-      eventType: 'VISITOR_CHECKED_IN',
-      link: '/portal/tenant/visitors',
-    });
+    if (request.tenant?.userId) {
+      await sendNotification({
+        userId: request.tenant.userId,
+        title: 'Visitor Arrived at Gate',
+        message: `${request.visitorName} has been verified and entered via ${gateNumber || 'Main Gate 1'}.`,
+        eventType: 'VISITOR_CHECKED_IN',
+        link: '/portal/tenant/visitors',
+      });
+    }
 
     await logAudit({
-      userId: auth.session.id,
-      actorName: auth.session.name,
+      userId: auth.session?.id,
+      actorName: auth.session?.name || 'Security Guard',
       action: 'VISITOR_CHECK_IN',
       resource: 'VisitorRequest',
       resourceId: request.id,
-      newValue: { visitorName: request.visitorName, gateNumber },
+      newValue: { visitorName: request.visitorName, gateNumber: gateNumber || 'Main Gate 1' },
     });
 
     return NextResponse.json({ success: true, visitorRequest: updated, entry });
   } catch (err: any) {
+    console.error('Check-in error:', err);
     return NextResponse.json({ success: false, error: { message: err.message } }, { status: 500 });
   }
 }

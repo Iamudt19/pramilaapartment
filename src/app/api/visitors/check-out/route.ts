@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
     const exit = await prisma.visitorExit.create({
       data: {
         visitorRequestId: request.id,
-        securityGuardId: auth.session.staffId || auth.session.id,
-        securityGuardName: auth.session.name,
+        securityGuardId: auth.session?.staffId || auth.session?.id || 'GATE_GUARD_1',
+        securityGuardName: auth.session?.name || 'Security Officer',
         exitTime: now,
         durationMinutes,
         notes,
@@ -64,17 +64,19 @@ export async function POST(req: NextRequest) {
     });
 
     // 3. Notify Tenant
-    await sendNotification({
-      userId: request.tenant.userId,
-      title: 'Visitor Checked Out',
-      message: `${request.visitorName} has checked out. Total visit duration: ${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m.`,
-      eventType: 'VISITOR_CHECKED_OUT',
-      link: '/portal/tenant/visitors',
-    });
+    if (request.tenant?.userId) {
+      await sendNotification({
+        userId: request.tenant.userId,
+        title: 'Visitor Checked Out',
+        message: `${request.visitorName} has checked out. Total visit duration: ${Math.floor(durationMinutes / 60)}h ${durationMinutes % 60}m.`,
+        eventType: 'VISITOR_CHECKED_OUT',
+        link: '/portal/tenant/visitors',
+      });
+    }
 
     await logAudit({
-      userId: auth.session.id,
-      actorName: auth.session.name,
+      userId: auth.session?.id,
+      actorName: auth.session?.name || 'Security Guard',
       action: 'VISITOR_CHECK_OUT',
       resource: 'VisitorRequest',
       resourceId: request.id,
@@ -83,6 +85,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, visitorRequest: updated, exit });
   } catch (err: any) {
+    console.error('Check-out error:', err);
     return NextResponse.json({ success: false, error: { message: err.message } }, { status: 500 });
   }
 }

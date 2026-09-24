@@ -98,33 +98,33 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight">Executive Dashboard</h1>
-            <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold px-2.5 py-0.5 rounded-full">
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Executive Dashboard</h1>
+            <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-2.5 py-0.5 rounded-full shadow-sm">
               Live Operations
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">Pramila Apartments Management & Operations Overview</p>
+          <p className="text-xs sm:text-sm text-slate-600">Pramila Apartments Management & Operations Overview</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/portal/admin/bills"
-            className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all"
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all active:scale-95"
           >
             <Zap className="w-3.5 h-3.5" /> Generate Billing Cycle
           </Link>
           <Link
             href="/portal/admin/notices"
-            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl text-xs border border-slate-700 transition-all"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl text-xs shadow-md shadow-blue-600/20 transition-all active:scale-95"
           >
             Post Notice
           </Link>
           <Link
             href="/portal/admin/settings"
-            className="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded-xl border border-slate-800 transition-all"
+            className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-xl border border-slate-300 transition-all shadow-sm"
             title="Configuration Center"
           >
             <Sliders className="w-4 h-4" />
@@ -134,14 +134,14 @@ export default function AdminDashboardPage() {
 
       {/* Attention Board (Priority action reminders) */}
       {(pendingTenants.length > 0 || (vis.pendingVisitors || 0) > 0 || recentInquiries.length > 0) && (
-        <div className="glass-card rounded-2xl p-4 border border-amber-500/30 bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="bg-amber-50 rounded-3xl p-5 border border-amber-200 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-bold text-amber-300 block">Actions Requiring Estate Review Today</span>
-              <span className="text-xs text-slate-300">
+              <span className="text-xs font-bold text-amber-950 block">Actions Requiring Estate Review Today</span>
+              <span className="text-xs text-amber-800 font-medium">
                 {recentInquiries.length > 0 && `${recentInquiries.length} new prospective walkthrough inquiry • `}
                 {pendingTenants.length} pending tenant application(s) • {vis.pendingVisitors || 0} pending visitor approval(s)
               </span>
@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
             {recentInquiries.length > 0 && (
               <Link
                 href="/portal/admin/inquiries"
-                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-all"
+                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
               >
                 Review Leads ({recentInquiries.length})
               </Link>
@@ -159,14 +159,14 @@ export default function AdminDashboardPage() {
             {pendingTenants.length > 0 && (
               <Link
                 href="/portal/admin/tenants"
-                className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-all"
+                className="px-3.5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
               >
                 Review Tenants
               </Link>
             )}
             <Link
               href="/portal/admin/visitors"
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg border border-slate-700 transition-all"
+              className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
             >
               Review Passes
             </Link>
@@ -212,13 +212,13 @@ export default function AdminDashboardPage() {
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Revenue Breakdown Chart */}
-        <div className="lg:col-span-2 glass-card rounded-3xl p-6 border border-slate-800">
+        <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200 shadow-md">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-white text-base">Collections by Category</h3>
-              <p className="text-xs text-slate-400">Rent, society maintenance, electricity units & penalties</p>
+              <h3 className="font-black text-slate-900 text-base">Collections by Category</h3>
+              <p className="text-xs text-slate-500">Rent, society maintenance, electricity units & penalties</p>
             </div>
-            <span className="text-xs font-bold text-emerald-400 font-mono">
+            <span className="text-xs font-black text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 font-mono">
               Total: {formatCurrency(fin.totalBilled || 56300)}
             </span>
           </div>
@@ -243,16 +243,16 @@ export default function AdminDashboardPage() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <div className="w-full h-full bg-slate-900/40 animate-pulse rounded-2xl" />
+              <div className="w-full h-full bg-slate-100 animate-pulse rounded-2xl" />
             )}
           </div>
         </div>
 
         {/* Occupancy Breakdown */}
-        <div className="glass-card rounded-3xl p-6 border border-slate-800 flex flex-col justify-between">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md flex flex-col justify-between">
           <div>
-            <h3 className="font-bold text-white text-base mb-1">Society Occupancy</h3>
-            <p className="text-xs text-slate-400 mb-4">Live distribution of flat statuses</p>
+            <h3 className="font-black text-slate-900 text-base mb-1">Society Occupancy</h3>
+            <p className="text-xs text-slate-500 mb-4">Live distribution of flat statuses</p>
             <div className="h-44 w-full flex items-center justify-center">
               {isMounted ? (
                 <ResponsiveContainer width="100%" height="100%">
@@ -280,19 +280,19 @@ export default function AdminDashboardPage() {
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="w-full h-full bg-slate-900/40 animate-pulse rounded-2xl" />
+                <div className="w-full h-full bg-slate-100 animate-pulse rounded-2xl" />
               )}
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-800 pt-3">
+          <div className="grid grid-cols-2 gap-2 text-xs border-t border-slate-100 pt-3">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-              <span className="text-slate-300">Occupied: {occ.occupiedFlats || 2}</span>
+              <span className="text-slate-700 font-semibold">Occupied: {occ.occupiedFlats || 2}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-              <span className="text-slate-300">Vacant: {occ.vacantFlats || 2}</span>
+              <span className="text-slate-700 font-semibold">Vacant: {occ.vacantFlats || 2}</span>
             </div>
           </div>
         </div>
@@ -301,30 +301,30 @@ export default function AdminDashboardPage() {
       {/* Live Activity Grids */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Inquiries */}
-        <div className="glass-card rounded-3xl p-6 border border-slate-800">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-              <h3 className="font-bold text-white text-sm">Walkthrough Leads</h3>
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              <h3 className="font-black text-slate-900 text-sm">Walkthrough Leads</h3>
             </div>
-            <Link href="/portal/admin/inquiries" className="text-xs text-emerald-400 hover:underline">
+            <Link href="/portal/admin/inquiries" className="text-xs font-bold text-blue-600 hover:text-blue-800">
               View all →
             </Link>
           </div>
 
           <div className="space-y-3">
             {recentInquiries.length === 0 ? (
-              <p className="text-xs text-slate-500 py-4 text-center">No new inquiries.</p>
+              <p className="text-xs text-slate-400 py-4 text-center">No new inquiries.</p>
             ) : (
               recentInquiries.map((inq) => (
-                <div key={inq.id} className="p-3 bg-slate-950/60 rounded-2xl border border-slate-800/80 flex items-center justify-between text-xs">
+                <div key={inq.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
                   <div>
-                    <span className="font-bold text-slate-200 block">{inq.fullName}</span>
-                    <span className="text-slate-400 text-[11px]">
+                    <span className="font-bold text-slate-900 block">{inq.fullName}</span>
+                    <span className="text-slate-500 text-[11px]">
                       {inq.phone} • {inq.flatNumber ? `Flat ${inq.flatNumber}` : inq.suiteName}
                     </span>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200">
                     {inq.status}
                   </span>
                 </div>
@@ -334,36 +334,36 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Recent Visitors */}
-        <div className="glass-card rounded-3xl p-6 border border-slate-800">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
             <div className="flex items-center gap-2">
-              <QrCode className="w-4 h-4 text-emerald-400" />
-              <h3 className="font-bold text-white text-sm">Visitor Gate Passes</h3>
+              <QrCode className="w-4 h-4 text-blue-600" />
+              <h3 className="font-black text-slate-900 text-sm">Visitor Gate Passes</h3>
             </div>
-            <Link href="/portal/admin/visitors" className="text-xs text-emerald-400 hover:underline">
+            <Link href="/portal/admin/visitors" className="text-xs font-bold text-blue-600 hover:text-blue-800">
               View all →
             </Link>
           </div>
 
           <div className="space-y-3">
             {recentVisitors.length === 0 ? (
-              <p className="text-xs text-slate-500 py-4 text-center">No visitor records yet.</p>
+              <p className="text-xs text-slate-400 py-4 text-center">No visitor records yet.</p>
             ) : (
               recentVisitors.map((v) => (
-                <div key={v.id} className="p-3 bg-slate-950/60 rounded-2xl border border-slate-800/80 flex items-center justify-between text-xs">
+                <div key={v.id} className="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
                   <div>
-                    <span className="font-bold text-slate-200 block">{v.visitorName}</span>
-                    <span className="text-slate-400 text-[11px]">
+                    <span className="font-bold text-slate-900 block">{v.visitorName}</span>
+                    <span className="text-slate-500 text-[11px]">
                       Flat {v.flat?.flatNumber} • {v.relationship}
                     </span>
                   </div>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
                       v.status === 'CHECKED_IN'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
                         : v.status === 'APPROVED'
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
                     }`}
                   >
                     {v.status}
@@ -375,28 +375,28 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Security Incidents & Penalties */}
-        <div className="glass-card rounded-3xl p-6 border border-slate-800">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-md">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
             <div className="flex items-center gap-2">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
-              <h3 className="font-bold text-white text-sm">Security & Violations</h3>
+              <ShieldAlert className="w-4 h-4 text-rose-600" />
+              <h3 className="font-black text-slate-900 text-sm">Security & Violations</h3>
             </div>
-            <Link href="/portal/admin/security" className="text-xs text-emerald-400 hover:underline">
+            <Link href="/portal/admin/security" className="text-xs font-bold text-blue-600 hover:text-blue-800">
               Manage →
             </Link>
           </div>
 
           <div className="space-y-3">
             {recentIncidents.length === 0 ? (
-              <p className="text-xs text-slate-500 py-4 text-center">No security incidents logged.</p>
+              <p className="text-xs text-slate-400 py-4 text-center">No security incidents logged.</p>
             ) : (
               recentIncidents.map((inc) => (
-                <div key={inc.id} className="p-3 bg-slate-950/60 rounded-2xl border border-rose-900/30 flex items-center justify-between text-xs">
+                <div key={inc.id} className="p-3 bg-rose-50/60 rounded-2xl border border-rose-200 flex items-center justify-between text-xs">
                   <div>
-                    <span className="font-bold text-rose-300 block">{inc.incidentType.replace('_', ' ')}</span>
-                    <span className="text-slate-400 text-[11px] line-clamp-1">{inc.description}</span>
+                    <span className="font-bold text-rose-950 block">{inc.incidentType.replace('_', ' ')}</span>
+                    <span className="text-slate-600 text-[11px] line-clamp-1">{inc.description}</span>
                   </div>
-                  <span className="text-[10px] bg-rose-950 text-rose-300 border border-rose-800 px-2 py-0.5 rounded font-bold shrink-0">
+                  <span className="text-[10px] bg-rose-100 text-rose-800 border border-rose-300 px-2 py-0.5 rounded font-extrabold shrink-0">
                     {inc.severity}
                   </span>
                 </div>
