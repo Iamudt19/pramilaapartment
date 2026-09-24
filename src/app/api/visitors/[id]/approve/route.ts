@@ -23,11 +23,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return NextResponse.json({ success: false, error: { message: 'Visitor request not found' } }, { status: 404 });
     }
 
+    const arrivalDate = request.expectedArrival ? new Date(request.expectedArrival) : new Date();
+    const departureDate = request.expectedDeparture
+      ? new Date(request.expectedDeparture)
+      : new Date(arrivalDate.getTime() + (request.durationHours || 4) * 60 * 60 * 1000);
+
     const updated = await prisma.visitorRequest.update({
       where: { id: params.id },
       data: {
         status: 'APPROVED',
-        reviewedBy: auth.session.name,
+        reviewedBy: auth.session?.name || 'Administrator',
         reviewedAt: new Date(),
       },
     });
@@ -35,8 +40,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     let pass = request.pass;
     if (!pass) {
       const passCode = generateSecurePassToken();
-      const validFrom = new Date(request.expectedArrival.getTime() - 60 * 60 * 1000);
-      const validUntil = new Date(request.expectedDeparture.getTime() + 2 * 60 * 60 * 1000);
+      const validFrom = new Date(arrivalDate.getTime() - 60 * 60 * 1000);
+      const validUntil = new Date(departureDate.getTime() + 2 * 60 * 60 * 1000);
 
       pass = await prisma.visitorPass.create({
         data: {
@@ -47,29 +52,37 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
           isActive: true,
         },
       });
+    } else {
+      pass = await prisma.visitorPass.update({
+        where: { id: pass.id },
+        data: { isActive: true },
+      });
     }
 
-    // Notify Tenant
-    await sendNotification({
-      userId: request.tenant.userId,
-      title: 'Visitor Pass Approved',
-      message: `Visitor pass for ${request.visitorName} to Flat ${request.flat.flatNumber} has been approved. Digital QR pass is now active.`,
-      eventType: 'VISITOR_APPROVED',
-      link: '/portal/tenant/visitors',
-      sendEmail: true,
-    });
+    // Notify Tenant safely
+    if (request.tenant?.userId) {
+      await sendNotification({
+        userId: request.tenant.userId,
+        title: 'Visitor Pass Approved',
+        message: `Visitor pass for ${request.visitorName} to Flat ${request.flat?.flatNumber || ''} has been approved. Digital QR pass is now active.`,
+        eventType: 'VISITOR_APPROVED',
+        link: '/portal/tenant/visitors',
+        sendEmail: true,
+      });
+    }
 
     await logAudit({
-      userId: auth.session.id,
-      actorName: auth.session.name,
+      userId: auth.session?.id,
+      actorName: auth.session?.name || 'Administrator',
       action: 'VISITOR_APPROVED',
       resource: 'VisitorRequest',
       resourceId: request.id,
-      newValue: { visitorName: request.visitorName, passCode: pass.passCode },
+      newValue: { visitorName: request.visitorName, passCode: pass?.passCode },
     });
 
     return NextResponse.json({ success: true, visitorRequest: updated, pass });
   } catch (err: any) {
+    console.error('Approve visitor error:', err);
     return NextResponse.json({ success: false, error: { message: err.message } }, { status: 500 });
   }
 }

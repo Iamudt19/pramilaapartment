@@ -51,9 +51,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         flatId: flat.id,
         startDate: startDate ? new Date(startDate) : new Date(),
         endDate: endDate ? new Date(endDate) : null,
-        monthlyRent: monthlyRent ? parseFloat(monthlyRent) : flat.monthlyRent,
-        depositAmount: depositAmount ? parseFloat(depositAmount) : flat.deposit,
-        maintenanceAmount: maintenanceAmount ? parseFloat(maintenanceAmount) : flat.maintenance,
+        monthlyRent: monthlyRent ? parseFloat(monthlyRent) : (flat.monthlyRent || 22000),
+        depositAmount: depositAmount ? parseFloat(depositAmount) : (flat.deposit || 44000),
+        maintenanceAmount: maintenanceAmount ? parseFloat(maintenanceAmount) : (flat.maintenance || 2500),
         status: 'ACTIVE',
       },
     });
@@ -70,20 +70,29 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       data: { status: 'ACTIVE' },
     });
 
-    // 4. Send notification
-    await sendNotification({
-      userId: tenant.userId,
-      title: 'Welcome to Pramila Apartments!',
-      message: `Your tenancy for Flat ${flat.flatNumber} has been activated. You can now log in to view bills, request visitor passes, and access resident services.`,
-      eventType: 'TENANT_APPROVED',
-      link: '/portal/tenant',
-      sendEmail: true,
-    });
+    if (tenant.userId) {
+      await prisma.user.update({
+        where: { id: tenant.userId },
+        data: { isActive: true },
+      }).catch(() => {});
+    }
+
+    // 4. Send notification safely
+    if (tenant.userId) {
+      await sendNotification({
+        userId: tenant.userId,
+        title: 'Welcome to Pramila Apartments!',
+        message: `Your tenancy for Flat ${flat.flatNumber} has been activated. You can now log in to view bills, request visitor passes, and access resident services.`,
+        eventType: 'TENANT_APPROVED',
+        link: '/portal/tenant',
+        sendEmail: true,
+      });
+    }
 
     // 5. Audit Log
     await logAudit({
-      userId: auth.session.id,
-      actorName: auth.session.name,
+      userId: auth.session?.id,
+      actorName: auth.session?.name || 'Administrator',
       action: 'TENANT_APPROVED_AND_ASSIGNED',
       resource: 'Tenant',
       resourceId: tenant.id,
@@ -92,6 +101,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({ success: true, tenant: updatedTenant, tenancy });
   } catch (err: any) {
+    console.error('Tenant approval error:', err);
     return NextResponse.json({ success: false, error: { message: err.message } }, { status: 500 });
   }
 }

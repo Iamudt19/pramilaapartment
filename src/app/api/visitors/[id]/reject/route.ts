@@ -25,22 +25,24 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       data: {
         status: 'REJECTED',
         rejectionReason: rejectionReason || 'Visitor entry not permitted by management',
-        reviewedBy: auth.session.name,
+        reviewedBy: auth.session?.name || 'Administrator',
         reviewedAt: new Date(),
       },
     });
 
-    await sendNotification({
-      userId: request.tenant.userId,
-      title: 'Visitor Request Declined',
-      message: `Visitor request for ${request.visitorName} was declined by management. Reason: ${rejectionReason || 'Policy check'}`,
-      eventType: 'VISITOR_REJECTED',
-      sendEmail: true,
-    });
+    if (request.tenant?.userId) {
+      await sendNotification({
+        userId: request.tenant.userId,
+        title: 'Visitor Request Declined',
+        message: `Visitor request for ${request.visitorName} was declined by management. Reason: ${rejectionReason || 'Policy check'}`,
+        eventType: 'VISITOR_REJECTED',
+        sendEmail: true,
+      });
+    }
 
     await logAudit({
-      userId: auth.session.id,
-      actorName: auth.session.name,
+      userId: auth.session?.id,
+      actorName: auth.session?.name || 'Administrator',
       action: 'VISITOR_REJECTED',
       resource: 'VisitorRequest',
       resourceId: request.id,
@@ -49,6 +51,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({ success: true, visitorRequest: updated });
   } catch (err: any) {
+    console.error('Reject visitor error:', err);
     return NextResponse.json({ success: false, error: { message: err.message } }, { status: 500 });
   }
 }

@@ -28,17 +28,19 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       },
     });
 
-    await sendNotification({
-      userId: tenant.userId,
-      title: 'Tenant Application Update',
-      message: `Your tenant application was not approved. Reason: ${rejectionReason || 'Application criteria not met'}`,
-      eventType: 'TENANT_REJECTED',
-      sendEmail: true,
-    });
+    if (tenant.userId) {
+      await sendNotification({
+        userId: tenant.userId,
+        title: 'Tenant Application Update',
+        message: `Your tenant application was not approved. Reason: ${rejectionReason || 'Application criteria not met'}`,
+        eventType: 'TENANT_REJECTED',
+        sendEmail: true,
+      });
+    }
 
     await logAudit({
-      userId: auth.session.id,
-      actorName: auth.session.name,
+      userId: auth.session?.id,
+      actorName: auth.session?.name || 'Administrator',
       action: 'TENANT_APPLICATION_REJECTED',
       resource: 'Tenant',
       resourceId: tenant.id,
@@ -47,6 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     return NextResponse.json({ success: true, tenant: updated });
   } catch (err: any) {
+    console.error('Tenant rejection error:', err);
     return NextResponse.json({ success: false, error: { message: err.message } }, { status: 500 });
   }
 }

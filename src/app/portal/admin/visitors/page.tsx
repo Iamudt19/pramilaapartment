@@ -12,11 +12,17 @@ export default function AdminVisitorsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedPass, setSelectedPass] = useState<any>(null);
 
+  const [actionLoading, setActionLoading] = useState<Record<string, 'approving' | 'rejecting'>>({});
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const fetchVisitors = async () => {
     try {
       const res = await fetch(`/api/visitors?search=${search}&status=${statusFilter}`);
-      if (res.ok) setVisitors((await res.json()).visitors || []);
-    } catch (e) {
+      if (res.ok) {
+        const data = await res.json();
+        setVisitors(data.visitors || []);
+      }
+    } catch (e: any) {
       console.error(e);
     }
   };
@@ -27,23 +33,56 @@ export default function AdminVisitorsPage() {
 
   const handleApprove = async (id: string) => {
     try {
+      setActionLoading((prev) => ({ ...prev, [id]: 'approving' }));
+      setFeedback(null);
       const res = await fetch(`/api/visitors/${id}/approve`, { method: 'POST' });
-      if (res.ok) fetchVisitors();
-    } catch (e) {
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFeedback({ type: 'success', message: `Visitor pass approved! Pass code generated and sent to resident.` });
+        await fetchVisitors();
+      } else {
+        setFeedback({ type: 'error', message: data.error?.message || 'Failed to approve visitor pass' });
+      }
+    } catch (e: any) {
       console.error(e);
+      setFeedback({ type: 'error', message: e.message || 'Error approving pass' });
+    } finally {
+      setActionLoading((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     }
   };
 
   const handleReject = async (id: string) => {
+    const reason = prompt('Reason for declining visitor pass:', 'Declined by Estate Manager / Security Protocol');
+    if (reason === null) return; // User cancelled prompt
+
     try {
+      setActionLoading((prev) => ({ ...prev, [id]: 'rejecting' }));
+      setFeedback(null);
       const res = await fetch(`/api/visitors/${id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rejectionReason: 'Declined by Estate Manager' }),
+        body: JSON.stringify({ rejectionReason: reason || 'Declined by Estate Manager' }),
       });
-      if (res.ok) fetchVisitors();
-    } catch (e) {
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setFeedback({ type: 'success', message: 'Visitor pass declined.' });
+        await fetchVisitors();
+      } else {
+        setFeedback({ type: 'error', message: data.error?.message || 'Failed to decline visitor pass' });
+      }
+    } catch (e: any) {
       console.error(e);
+      setFeedback({ type: 'error', message: e.message || 'Error declining pass' });
+    } finally {
+      setActionLoading((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     }
   };
 
@@ -84,6 +123,28 @@ export default function AdminVisitorsPage() {
           <option value="REJECTED">Rejected</option>
         </select>
       </div>
+
+      {feedback && (
+        <div
+          className={`p-4 rounded-2xl text-xs font-semibold flex items-center justify-between border ${
+            feedback.type === 'success'
+              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+              : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {feedback.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            ) : (
+              <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+            )}
+            <span>{feedback.message}</span>
+          </div>
+          <button onClick={() => setFeedback(null)} className="text-slate-400 hover:text-white text-xs">
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Visitors List */}
       <div className="glass-card rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
@@ -159,15 +220,17 @@ export default function AdminVisitorsPage() {
                       <div className="flex justify-end gap-1.5">
                         <button
                           onClick={() => handleApprove(v.id)}
-                          className="px-2.5 py-1 bg-emerald-500 text-slate-950 font-bold rounded-lg text-[11px] hover:bg-emerald-400 shadow-sm"
+                          disabled={Boolean(actionLoading[v.id])}
+                          className="px-2.5 py-1 bg-emerald-500 disabled:opacity-50 text-slate-950 font-bold rounded-lg text-[11px] hover:bg-emerald-400 shadow-sm transition-all"
                         >
-                          Approve Pass
+                          {actionLoading[v.id] === 'approving' ? 'Approving...' : 'Approve Pass'}
                         </button>
                         <button
                           onClick={() => handleReject(v.id)}
-                          className="px-2.5 py-1 bg-rose-950 text-rose-300 border border-rose-800 rounded-lg text-[11px] hover:bg-rose-900"
+                          disabled={Boolean(actionLoading[v.id])}
+                          className="px-2.5 py-1 bg-rose-950 disabled:opacity-50 text-rose-300 border border-rose-800 rounded-lg text-[11px] hover:bg-rose-900 transition-all"
                         >
-                          Decline
+                          {actionLoading[v.id] === 'rejecting' ? 'Declining...' : 'Decline'}
                         </button>
                       </div>
                     ) : v.pass ? (

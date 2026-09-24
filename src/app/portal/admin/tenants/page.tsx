@@ -17,6 +17,9 @@ export default function TenantsPage() {
   const [assignFlatId, setAssignFlatId] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
 
+  const [isSubmitting, setIsSubmitting] = useState<'approving' | 'rejecting' | false>(false);
+  const [modalFeedback, setModalFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const fetchData = async () => {
     try {
       const [tenRes, flatRes] = await Promise.all([
@@ -45,34 +48,50 @@ export default function TenantsPage() {
   const handleApprove = async () => {
     if (!selectedTenant) return;
     try {
+      setIsSubmitting('approving');
+      setModalFeedback(null);
       const res = await fetch(`/api/tenants/${selectedTenant.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ flatId: assignFlatId }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setShowReviewModal(false);
-        fetchData();
+        await fetchData();
+      } else {
+        setModalFeedback({ type: 'error', message: data.error?.message || 'Failed to approve tenant application' });
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setModalFeedback({ type: 'error', message: e.message || 'Error approving application' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleReject = async () => {
     if (!selectedTenant) return;
     try {
+      setIsSubmitting('rejecting');
+      setModalFeedback(null);
       const res = await fetch(`/api/tenants/${selectedTenant.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rejectionReason }),
+        body: JSON.stringify({ rejectionReason: rejectionReason || 'Application criteria not met' }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setShowReviewModal(false);
-        fetchData();
+        await fetchData();
+      } else {
+        setModalFeedback({ type: 'error', message: data.error?.message || 'Failed to decline application' });
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setModalFeedback({ type: 'error', message: e.message || 'Error declining application' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -230,6 +249,23 @@ export default function TenantsPage() {
               </div>
             </div>
 
+            {modalFeedback && (
+              <div
+                className={`p-3 rounded-xl text-xs font-semibold flex items-center gap-2 mb-4 border ${
+                  modalFeedback.type === 'success'
+                    ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
+                    : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                }`}
+              >
+                {modalFeedback.type === 'success' ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                ) : (
+                  <XCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                )}
+                <span>{modalFeedback.message}</span>
+              </div>
+            )}
+
             {selectedTenant.status === 'PENDING' && (
               <div className="space-y-4">
                 <div>
@@ -257,17 +293,18 @@ export default function TenantsPage() {
                   <button
                     type="button"
                     onClick={handleReject}
-                    className="flex-1 bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-800/80 py-2.5 rounded-xl text-xs font-semibold"
+                    disabled={Boolean(isSubmitting)}
+                    className="flex-1 bg-rose-950 hover:bg-rose-900 disabled:opacity-50 text-rose-300 border border-rose-800/80 py-2.5 rounded-xl text-xs font-semibold transition-all"
                   >
-                    Decline Application
+                    {isSubmitting === 'rejecting' ? 'Declining...' : 'Decline Application'}
                   </button>
                   <button
                     type="button"
                     onClick={handleApprove}
-                    disabled={!assignFlatId}
-                    className="flex-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20"
+                    disabled={!assignFlatId || Boolean(isSubmitting)}
+                    className="flex-1 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 transition-all"
                   >
-                    Approve & Activate Tenancy
+                    {isSubmitting === 'approving' ? 'Activating...' : 'Approve & Activate Tenancy'}
                   </button>
                 </div>
               </div>
