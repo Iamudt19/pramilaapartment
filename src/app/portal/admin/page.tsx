@@ -41,12 +41,14 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // reports API now uses fast DB aggregations, not full table scans
+        // visitors/incidents fetch with limit=5 so we only retrieve what we display
         const [repRes, visRes, incRes, tenRes, inqRes] = await Promise.all([
           fetch('/api/reports'),
-          fetch('/api/visitors'),
-          fetch('/api/security/incidents'),
-          fetch('/api/tenants?status=PENDING'),
-          fetch('/api/inquiries?status=NEW'),
+          fetch('/api/visitors?limit=5'),
+          fetch('/api/security/incidents?limit=5'),
+          fetch('/api/tenants?status=PENDING&limit=10'),
+          fetch('/api/inquiries?status=NEW&limit=5'),
         ]);
 
         if (repRes.ok) setReportData((await repRes.json()));

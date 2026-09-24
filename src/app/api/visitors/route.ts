@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     const flatId = searchParams.get('flatId');
     const tenantId = searchParams.get('tenantId');
     const search = searchParams.get('search');
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!) : undefined;
 
     const where: any = {};
     if (status) where.status = status;
@@ -51,6 +52,7 @@ export async function GET(req: NextRequest) {
         documents: true,
       },
       orderBy: { createdAt: 'desc' },
+      ...(limit ? { take: limit } : {}),
     });
 
     return NextResponse.json({ success: true, visitors });

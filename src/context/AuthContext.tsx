@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export interface AuthUser {
   id: string;
@@ -42,11 +42,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   const fetchCurrentUser = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch('/api/auth/me', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         if (data.success && data.user) {
@@ -64,9 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Only fetch once on mount — NOT on every route change
+  // Re-fetching on pathname causes a DB query on every single page click
   useEffect(() => {
     fetchCurrentUser();
-  }, [pathname]);
+  }, []); // ← removed [pathname] dependency
+
 
   const login = async (email: string, password?: string): Promise<AuthResult> => {
     try {

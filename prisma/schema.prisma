@@ -127,6 +127,8 @@ model Flat {
   penalties           Penalty[]
 
   @@unique([buildingId, flatNumber])
+  @@index([status])
+  @@index([buildingId])
 }
 
 model Tenant {
@@ -158,6 +160,9 @@ model Tenant {
   vehicles              Vehicle[]
   penalties             Penalty[]
   securityIncidents     SecurityIncident[]
+
+  @@index([status])
+  @@index([userId])
 }
 
 model TenantFamilyMember {
@@ -197,6 +202,10 @@ model Tenancy {
 
   tenant               Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   flat                 Flat      @relation(fields: [flatId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([flatId])
+  @@index([status])
 }
 
 model TenantDocument {
@@ -601,6 +610,9 @@ model Notification {
   createdAt DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
 }
 
 model EmergencyAlert {
@@ -633,6 +645,10 @@ model AuditLog {
   timestamp  DateTime @default(now())
 
   user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([action])
+  @@index([resource])
+  @@index([timestamp])
 }
 
 model SystemSetting {
