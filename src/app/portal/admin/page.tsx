@@ -29,16 +29,18 @@ export default function AdminDashboardPage() {
   const [recentVisitors, setRecentVisitors] = useState<any[]>([]);
   const [recentIncidents, setRecentIncidents] = useState<any[]>([]);
   const [pendingTenants, setPendingTenants] = useState<any[]>([]);
+  const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [repRes, visRes, incRes, tenRes] = await Promise.all([
+        const [repRes, visRes, incRes, tenRes, inqRes] = await Promise.all([
           fetch('/api/reports'),
           fetch('/api/visitors'),
           fetch('/api/security/incidents'),
           fetch('/api/tenants?status=PENDING'),
+          fetch('/api/inquiries?status=NEW'),
         ]);
 
         if (repRes.ok) setReportData((await repRes.json()));
@@ -53,6 +55,10 @@ export default function AdminDashboardPage() {
         if (tenRes.ok) {
           const tenData = await tenRes.json();
           setPendingTenants(tenData.tenants || []);
+        }
+        if (inqRes.ok) {
+          const inqData = await inqRes.json();
+          setRecentInquiries(inqData.inquiries?.slice(0, 5) || []);
         }
       } catch (e) {
         console.error(e);
@@ -121,7 +127,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Attention Board (Priority action reminders) */}
-      {(pendingTenants.length > 0 || (vis.pendingVisitors || 0) > 0) && (
+      {(pendingTenants.length > 0 || (vis.pendingVisitors || 0) > 0 || recentInquiries.length > 0) && (
         <div className="glass-card rounded-2xl p-4 border border-amber-500/30 bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
@@ -130,11 +136,20 @@ export default function AdminDashboardPage() {
             <div>
               <span className="text-xs font-bold text-amber-300 block">Actions Requiring Estate Review Today</span>
               <span className="text-xs text-slate-300">
+                {recentInquiries.length > 0 && `${recentInquiries.length} new prospective walkthrough inquiry • `}
                 {pendingTenants.length} pending tenant application(s) • {vis.pendingVisitors || 0} pending visitor approval(s)
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            {recentInquiries.length > 0 && (
+              <Link
+                href="/portal/admin/inquiries"
+                className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition-all"
+              >
+                Review Leads ({recentInquiries.length})
+              </Link>
+            )}
             {pendingTenants.length > 0 && (
               <Link
                 href="/portal/admin/tenants"
@@ -270,13 +285,46 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Live Activity Grids */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Recent Inquiries */}
+        <div className="glass-card rounded-3xl p-6 border border-slate-800">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-400" />
+              <h3 className="font-bold text-white text-sm">Walkthrough Leads</h3>
+            </div>
+            <Link href="/portal/admin/inquiries" className="text-xs text-emerald-400 hover:underline">
+              View all →
+            </Link>
+          </div>
+
+          <div className="space-y-3">
+            {recentInquiries.length === 0 ? (
+              <p className="text-xs text-slate-500 py-4 text-center">No new inquiries.</p>
+            ) : (
+              recentInquiries.map((inq) => (
+                <div key={inq.id} className="p-3 bg-slate-950/60 rounded-2xl border border-slate-800/80 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-200 block">{inq.fullName}</span>
+                    <span className="text-slate-400 text-[11px]">
+                      {inq.phone} • {inq.flatNumber ? `Flat ${inq.flatNumber}` : inq.suiteName}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    {inq.status}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Recent Visitors */}
         <div className="glass-card rounded-3xl p-6 border border-slate-800">
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
             <div className="flex items-center gap-2">
               <QrCode className="w-4 h-4 text-emerald-400" />
-              <h3 className="font-bold text-white text-sm">Recent Visitor Gate Passes</h3>
+              <h3 className="font-bold text-white text-sm">Visitor Gate Passes</h3>
             </div>
             <Link href="/portal/admin/visitors" className="text-xs text-emerald-400 hover:underline">
               View all →
@@ -292,7 +340,7 @@ export default function AdminDashboardPage() {
                   <div>
                     <span className="font-bold text-slate-200 block">{v.visitorName}</span>
                     <span className="text-slate-400 text-[11px]">
-                      Destination: Flat {v.flat?.flatNumber} • {v.relationship}
+                      Flat {v.flat?.flatNumber} • {v.relationship}
                     </span>
                   </div>
                   <span
@@ -317,10 +365,10 @@ export default function AdminDashboardPage() {
           <div className="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
             <div className="flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-rose-400" />
-              <h3 className="font-bold text-white text-sm">Security Incidents & Violations</h3>
+              <h3 className="font-bold text-white text-sm">Security & Violations</h3>
             </div>
             <Link href="/portal/admin/security" className="text-xs text-emerald-400 hover:underline">
-              Manage penalties →
+              Manage →
             </Link>
           </div>
 

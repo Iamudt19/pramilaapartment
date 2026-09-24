@@ -52,6 +52,8 @@ export default function LandingPage() {
   const [selectedSuite, setSelectedSuite] = useState('Surya 2BHK Deluxe');
   const [inquiryName, setInquiryName] = useState('');
   const [inquiryPhone, setInquiryPhone] = useState('');
+  const [inquiryEmail, setInquiryEmail] = useState('');
+  const [inquirySubmitting, setInquirySubmitting] = useState(false);
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
 
   // Interactive Calculator State
@@ -79,16 +81,42 @@ export default function LandingPage() {
     fetchVacancies();
   }, []);
 
-  const handleInquirySubmit = (e: React.FormEvent) => {
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setInquirySubmitted(true);
-    setTimeout(() => {
-      setInquirySubmitted(false);
-      setInquiryModal(false);
-      setInquiryName('');
-      setInquiryPhone('');
-      setSelectedFlatForInquiry(null);
-    }, 2500);
+    setInquirySubmitting(true);
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: inquiryName,
+          phone: inquiryPhone,
+          email: inquiryEmail || null,
+          suiteName: selectedSuite,
+          flatNumber: selectedFlatForInquiry ? String(selectedFlatForInquiry.flatNumber) : null,
+        }),
+      });
+
+      if (res.ok) {
+        setInquirySubmitted(true);
+        setTimeout(() => {
+          setInquirySubmitted(false);
+          setInquiryModal(false);
+          setInquiryName('');
+          setInquiryPhone('');
+          setInquiryEmail('');
+          setSelectedFlatForInquiry(null);
+        }, 2500);
+      } else {
+        const data = await res.json();
+        alert(data.error?.message || 'Failed to submit inquiry. Please try again.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Network error. Please try again.');
+    } finally {
+      setInquirySubmitting(false);
+    };
   };
 
   const handleOpenFlatInquiry = (flat: any) => {
@@ -229,50 +257,45 @@ export default function LandingPage() {
     <div className="min-h-screen -mt-4 lg:-mt-8 -mx-4 lg:-mx-8 space-y-20 pb-20 overflow-x-hidden bg-slate-50 text-slate-900">
       {/* 🌟 1. HIGH-IMPACT LUXURY HERO SECTION */}
       <section className="relative min-h-[92vh] lg:min-h-[96vh] flex flex-col justify-between items-center text-center px-4 sm:px-8 py-10 sm:py-14 overflow-hidden">
-        {/* Real Building Photograph with Luxury Light Overlay */}
+        {/* Real Building Photograph with Clear Visibility */}
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-105 transition-transform duration-1000"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-100 transition-transform duration-1000"
           style={{ backgroundImage: "url('/images/building.png')" }}
         />
-        {/* Light Glass Vignette Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/80 to-white/95" />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-white/50 to-white/90" />
+        {/* Light Glass Vignette Overlays with High Transparency */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/75 via-white/35 to-white/90 backdrop-blur-[0.5px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent opacity-90" />
 
         {/* Top Floating Pill Badges */}
         <div className="relative z-10 pt-2 flex flex-wrap justify-center items-center gap-2 sm:gap-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/90 border border-slate-200 backdrop-blur-md text-slate-800 text-xs font-bold shadow-sm">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/95 border border-slate-200 backdrop-blur-md text-slate-800 text-xs font-bold shadow-sm">
             <Compass className="w-3.5 h-3.5 text-emerald-600" />
             <span>500m from DMCH Hospital • Darbhanga, Bihar</span>
           </div>
 
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-black shadow-sm">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50/95 border border-emerald-200 text-emerald-800 text-xs font-black shadow-sm backdrop-blur-md">
             <span className="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
             <span>{loadingFlats ? 'Checking Vacancies...' : `${vacantFlats.length} Vacant 2BHK Units Listed Live`}</span>
           </div>
 
-          <div className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold">
+          <div className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-amber-50/95 border border-amber-200 text-amber-800 text-xs font-bold backdrop-blur-md">
             <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
             <span>4.9/5 Doctor & Family Rating</span>
           </div>
         </div>
 
-        {/* Center Hero Typography */}
-        <div className="relative z-10 max-w-4xl mx-auto space-y-6 my-auto">
-          <div className="flex justify-center pb-1">
-            <div className="p-3 bg-white/90 rounded-2xl border border-slate-200 shadow-md">
-              <img
-                src="/images/logo.png"
-                alt="Pramila Apartment Logo"
-                className="h-14 sm:h-20 w-auto object-contain"
-              />
-            </div>
+        {/* Center Hero Typography with Frosted Translucent Glass */}
+        <div className="relative z-10 max-w-4xl mx-auto space-y-6 my-auto p-6 sm:p-10 rounded-3xl bg-white/70 backdrop-blur-md border border-white/80 shadow-xl shadow-slate-900/5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-white text-[11px] font-black uppercase tracking-wider shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+            <span>DMCH Road's Premier Residential Landmark</span>
           </div>
 
           <h1 className="font-serif-luxury text-4xl sm:text-6xl lg:text-7xl tracking-tight text-slate-950 leading-[1.08] font-black drop-shadow-sm">
             Pramila Apartments
           </h1>
 
-          <p className="font-cormorant italic text-xl sm:text-3xl text-slate-700 max-w-2xl mx-auto font-medium leading-relaxed">
+          <p className="font-cormorant italic text-xl sm:text-3xl text-slate-800 max-w-2xl mx-auto font-medium leading-relaxed">
             Executive 2BHK residences with sunlit balconies, 24x7 water, and gated security in the prestigious DMCH medical vicinity.
           </p>
 
@@ -288,7 +311,7 @@ export default function LandingPage() {
 
             <a
               href="#calculator"
-              className="px-6 py-3.5 bg-white hover:bg-slate-100 text-slate-800 text-xs sm:text-sm font-bold tracking-[0.1em] uppercase border border-slate-300 rounded-2xl shadow-sm transition-all flex items-center gap-2"
+              className="px-6 py-3.5 bg-white/90 hover:bg-white text-slate-800 text-xs sm:text-sm font-bold tracking-[0.1em] uppercase border border-slate-300 rounded-2xl shadow-sm transition-all flex items-center gap-2"
             >
               <Calculator className="w-4 h-4 text-emerald-600" />
               <span>Rent & Utility Estimator</span>
@@ -837,6 +860,17 @@ export default function LandingPage() {
                 </div>
 
                 <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Email Address (Optional)</label>
+                  <input
+                    type="email"
+                    placeholder="e.g. rajesh.kumar@example.com"
+                    value={inquiryEmail}
+                    onChange={(e) => setInquiryEmail(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-emerald-600 focus:bg-white"
+                  />
+                </div>
+
+                <div>
                   <label className="text-xs font-bold text-slate-700 block mb-1">Inquiring For</label>
                   <input
                     type="text"
@@ -859,9 +893,10 @@ export default function LandingPage() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20"
+                    disabled={inquirySubmitting}
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5"
                   >
-                    Submit Inquiry
+                    {inquirySubmitting ? 'Saving Lead...' : 'Submit Inquiry'}
                   </button>
                 </div>
               </form>

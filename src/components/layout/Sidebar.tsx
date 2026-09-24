@@ -43,6 +43,7 @@ export function Sidebar() {
   const adminNav = [
     { label: 'Overview Dashboard', href: '/portal/admin', icon: LayoutDashboard },
     { label: 'Flats & Live Vacancies', href: '/portal/admin/flats', icon: Globe },
+    { label: 'Walkthrough Leads & Inquiries', href: '/portal/admin/inquiries', icon: Sparkles },
     { label: 'Tenants & Applications', href: '/portal/admin/tenants', icon: UserCheck },
     { label: 'Visitor Passes & Approvals', href: '/portal/admin/visitors', icon: QrCode },
     { label: 'Gate QR Scanner & Ops', href: '/portal/security', icon: ScanLine },
