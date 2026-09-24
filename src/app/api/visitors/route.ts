@@ -162,22 +162,19 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    let pass = null;
-    if (isAutoApproved) {
-      const passCode = generateSecurePassToken();
-      const validFrom = new Date(arrival.getTime() - 60 * 60 * 1000); // 1 hr grace before
-      const validUntil = new Date(departure.getTime() + 2 * 60 * 60 * 1000); // 2 hrs grace after
+    const passCode = generateSecurePassToken();
+    const validFrom = new Date(arrival.getTime() - 60 * 60 * 1000); // 1 hr grace before
+    const validUntil = new Date(departure.getTime() + 2 * 60 * 60 * 1000); // 2 hrs grace after
 
-      pass = await prisma.visitorPass.create({
-        data: {
-          visitorRequestId: visitorRequest.id,
-          passCode,
-          validFrom,
-          validUntil,
-          isActive: true,
-        },
-      });
-    }
+    const pass = await prisma.visitorPass.create({
+      data: {
+        visitorRequestId: visitorRequest.id,
+        passCode,
+        validFrom,
+        validUntil,
+        isActive: isAutoApproved,
+      },
+    });
 
     // Notify Management if pending approval
     if (!isAutoApproved) {

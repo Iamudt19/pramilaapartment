@@ -29,8 +29,7 @@ export function Navbar() {
     if (user?.role === 'TENANT') {
       router.push('/portal/tenant');
     } else {
-      login('tenant1@pramila.com');
-      router.push('/portal/tenant');
+      router.push('/login');
     }
   };
 

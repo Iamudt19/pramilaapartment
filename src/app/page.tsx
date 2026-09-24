@@ -50,12 +50,11 @@ export default function LandingPage() {
     }, 2500);
   };
 
-  const openTenantPortal = async () => {
+  const openTenantPortal = () => {
     if (user?.role === 'TENANT') {
       router.push('/portal/tenant');
     } else {
-      await login('tenant1@pramila.com');
-      router.push('/portal/tenant');
+      router.push('/login');
     }
   };
 
