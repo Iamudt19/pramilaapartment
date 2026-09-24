@@ -9,6 +9,7 @@ export interface AuthUser {
   name: string;
   role: string;
   phone?: string;
+  avatarUrl?: string;
   tenantId?: string;
   flatId?: string;
   flatNumber?: string;

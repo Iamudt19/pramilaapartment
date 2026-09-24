@@ -21,6 +21,7 @@ import {
   CheckCircle2,
   Clock,
   AlertTriangle,
+  Sparkles,
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 
@@ -31,6 +32,11 @@ export default function AdminDashboardPage() {
   const [pendingTenants, setPendingTenants] = useState<any[]>([]);
   const [recentInquiries, setRecentInquiries] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -217,46 +223,12 @@ export default function AdminDashboardPage() {
             </span>
           </div>
 
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
-                <YAxis stroke="#64748b" fontSize={11} tickLine={false} tickFormatter={(v) => `₹${v / 1000}k`} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#0f172a',
-                    borderColor: '#334155',
-                    borderRadius: '0.75rem',
-                    color: '#fff',
-                    fontSize: '12px',
-                  }}
-                  formatter={(value: any) => [formatCurrency(Number(value)), 'Amount']}
-                />
-                <Bar dataKey="amount" fill="#10b981" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Occupancy Breakdown */}
-        <div className="glass-card rounded-3xl p-6 border border-slate-800 flex flex-col justify-between">
-          <div>
-            <h3 className="font-bold text-white text-base mb-1">Society Occupancy</h3>
-            <p className="text-xs text-slate-400 mb-4">Live distribution of flat statuses</p>
-            <div className="h-44 w-full">
+          <div className="h-64 w-full flex items-center justify-center">
+            {isMounted ? (
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={occupancyPieData}
-                    innerRadius={50}
-                    outerRadius={70}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {occupancyPieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
+                <BarChart data={revenueChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="name" stroke="#64748b" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#64748b" fontSize={11} tickLine={false} tickFormatter={(v) => `₹${v / 1000}k`} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: '#0f172a',
@@ -265,9 +237,51 @@ export default function AdminDashboardPage() {
                       color: '#fff',
                       fontSize: '12px',
                     }}
+                    formatter={(value: any) => [formatCurrency(Number(value)), 'Amount']}
                   />
-                </PieChart>
+                  <Bar dataKey="amount" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                </BarChart>
               </ResponsiveContainer>
+            ) : (
+              <div className="w-full h-full bg-slate-900/40 animate-pulse rounded-2xl" />
+            )}
+          </div>
+        </div>
+
+        {/* Occupancy Breakdown */}
+        <div className="glass-card rounded-3xl p-6 border border-slate-800 flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-white text-base mb-1">Society Occupancy</h3>
+            <p className="text-xs text-slate-400 mb-4">Live distribution of flat statuses</p>
+            <div className="h-44 w-full flex items-center justify-center">
+              {isMounted ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={occupancyPieData}
+                      innerRadius={50}
+                      outerRadius={70}
+                      paddingAngle={5}
+                      dataKey="value"
+                    >
+                      {occupancyPieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#0f172a',
+                        borderColor: '#334155',
+                        borderRadius: '0.75rem',
+                        color: '#fff',
+                        fontSize: '12px',
+                      }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="w-full h-full bg-slate-900/40 animate-pulse rounded-2xl" />
+              )}
             </div>
           </div>
 

@@ -1,38 +1,43 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, currency: string = 'INR'): string {
-  if (isNaN(amount) || amount === null || amount === undefined) {
+export function formatCurrency(amount: number | null | undefined, currency: string = 'INR'): string {
+  if (amount === null || amount === undefined || isNaN(Number(amount))) {
     return '₹0';
   }
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-export function formatDate(date: string | Date | null | undefined, formatStr: string = 'dd MMM yyyy'): string {
-  if (!date) return '-';
   try {
-    const d = typeof date === 'string' ? parseISO(date) : date;
-    return format(d, formatStr);
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency,
+      maximumFractionDigits: 0,
+    }).format(Number(amount));
   } catch (err) {
-    return String(date);
+    return `₹${Number(amount || 0).toLocaleString('en-IN')}`;
   }
 }
 
-export function formatDateTime(date: string | Date | null | undefined): string {
+export function formatDate(date: string | Date | number | null | undefined, formatStr: string = 'dd MMM yyyy'): string {
+  if (!date) return '-';
+  try {
+    const d = typeof date === 'string' || typeof date === 'number' ? new Date(date) : date;
+    if (!d || isNaN(d.getTime())) return '-';
+    return format(d, formatStr);
+  } catch (err) {
+    return '-';
+  }
+}
+
+export function formatDateTime(date: string | Date | number | null | undefined): string {
   if (!date) return '-';
   return formatDate(date, 'dd MMM yyyy, hh:mm a');
 }
 
-export function formatTime(date: string | Date | null | undefined): string {
+export function formatTime(date: string | Date | number | null | undefined): string {
   if (!date) return '-';
   return formatDate(date, 'hh:mm a');
 }

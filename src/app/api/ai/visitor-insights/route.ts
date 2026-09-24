@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
     const auth = await requireAuth(req, ['SUPER_ADMIN', 'PROPERTY_MANAGER', 'SECURITY_GUARD']);
     if ('error' in auth) return auth.error;
 
-    const visitors = await prisma.visitor.findMany({
+    const visitors = await prisma.visitorRequest.findMany({
       where: {
         createdAt: {
           gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours

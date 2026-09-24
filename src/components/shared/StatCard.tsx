@@ -53,7 +53,7 @@ export function StatCard({
     },
   };
 
-  const c = colorMap[color];
+  const c = colorMap[color] || colorMap.blue;
 
   return (
     <div className={`bg-white rounded-3xl p-5 border border-slate-200 shadow-md hover:shadow-lg transition-all relative overflow-hidden`}>

@@ -88,8 +88,8 @@ export async function POST(req: NextRequest) {
       await sendNotification({
         userId: admin.id,
         title: 'New Walkthrough / Flat Inquiry',
-        body: `${fullName.trim()} (${phone.trim()}) requested a walkthrough for ${inquiry.suiteName}${inquiry.flatNumber ? ` (Flat ${inquiry.flatNumber})` : ''}.`,
-        type: 'SYSTEM',
+        message: `${fullName.trim()} (${phone.trim()}) requested a walkthrough for ${inquiry.suiteName}${inquiry.flatNumber ? ` (Flat ${inquiry.flatNumber})` : ''}.`,
+        eventType: 'SYSTEM',
       });
     }
 
